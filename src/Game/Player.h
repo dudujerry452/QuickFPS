@@ -1,10 +1,14 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 #include "raylib.h"
+#include "Input.h"
+#include "Entity.h"
+
+#include <queue>
 
 struct PlayerState {
     Vector3 position; 
-    Vector3 quarternion; 
+    Vector3 forward; 
     uint32_t health; 
     uint32_t weapon;
 };
@@ -15,16 +19,24 @@ class Player: virtual public Entity {
 
     PlayerState GetState() const; 
 
-    private: 
-    PlayerState m_state; 
+    protected: 
+    uint32_t m_health; 
+    uint32_t m_weapon;
 
 };
 
-class LocalPlayer: public Player{ 
+class LocalPlayer: virtual public Player{ 
+ // 这里的m_state代表预测的玩家状态
 
-    std::deque<InputState> m_inputque; 
+    public: 
 
-}
+    void PushNewInput(const InputState& new_input);
+    void ApplyAuthInput(const PlayerState& auth_state);
+
+    private: 
+    std::deque<InputState> m_inputQueue; 
+
+};
 
 
 
