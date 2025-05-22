@@ -17,8 +17,10 @@
 #include "rcamera.h"
 #include "Game/Entity.h"
 #include "Game/Player.h"
+#include "Game/World.h"
 
 #include "spdlog/spdlog.h"
+#include <iostream>
 
 #define MAX_COLUMNS 20
 
@@ -69,44 +71,19 @@ int main(void)
     LocalPlayer player;
     player.SetPos({0,2,4});
     player.SetForward({0,1,0});
+
+    World world;
+    auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
+
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
     {
-        // Update
-        //----------------------------------------------------------------------------------
- 
-        // Camera PRO usage example (EXPERIMENTAL)
-        // This new camera function allows custom movement/rotation values to be directly provided
-        // as input parameters, with this approach, rcamera module is internally independent of raylib inputs
-        // UpdateCameraPro(&camera,
-        //     (Vector3){
-        //         (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))*0.1f -      // Move forward-backward
-        //         (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))*0.1f,    
-        //         (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))*0.1f -   // Move right-left
-        //         (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))*0.1f,
-        //         0.0f                                                // Move up-down
-        //     },
-        //     (Vector3){
-        //         GetMouseDelta().x*0.05f,                            // Rotation: yaw
-        //         GetMouseDelta().y*0.05f,                            // Rotation: pitch
-        //         0.0f                                                // Rotation: roll
-        //     },
-        //     GetMouseWheelMove()*2.0f);                              // Move to target (zoom)
-
-        // spdlog::debug("pos: {},{},{}", camera.position.x, camera.position.y, camera.position.z);
-        // spdlog::debug("tar: {},{},{}", camera.up.x, camera.up.y, camera.up.z);
-
-
-        //----------------------------------------------------------------------------------
-
         IM.CheckInput();
 
-        player.PushNewInput(IM.Peek());
+        world.WorldPhysicsUpdate();
 
-        IM.Pop();
-
-        camera.position = player.GetPos();
-        camera.target = player.GetPos() + player.GetForward();
+        camera.position = world.GetEntity(plid)->GetPos();
+        camera.target = world.GetEntity(plid)->GetPos() + world.GetEntity(plid)->GetForward();
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -116,24 +93,21 @@ int main(void)
 
             BeginMode3D(camera);
 
-                DrawPlane((Vector3){ 0.0f, 0.0f, 0.0f }, (Vector2){ 32.0f, 32.0f }, LIGHTGRAY); // Draw ground
-                DrawCube((Vector3){ -16.0f, 2.5f, 0.0f }, 1.0f, 5.0f, 32.0f, BLUE);     // Draw a blue wall
-                DrawCube((Vector3){ 16.0f, 2.5f, 0.0f }, 1.0f, 5.0f, 32.0f, LIME);      // Draw a green wall
-                DrawCube((Vector3){ 0.0f, 2.5f, 16.0f }, 32.0f, 5.0f, 1.0f, GOLD);      // Draw a yellow wall
+            for(auto obj : world.GetMap().objects) {
+                DrawCube(obj.colisionBoxes.min, 
+                obj.colisionBoxes.max.x, 
+                obj.colisionBoxes.max.y,
+                obj.colisionBoxes.max.z,
+                obj.color
+                );
+                DrawCubeWires(obj.colisionBoxes.min, 
+                obj.colisionBoxes.max.x, 
+                obj.colisionBoxes.max.y,
+                obj.colisionBoxes.max.z,
+                MAROON
+                );
 
-                // Draw some cubes around
-                for (int i = 0; i < MAX_COLUMNS; i++)
-                {
-                    DrawCube(positions[i], 2.0f, heights[i], 2.0f, colors[i]);
-                    DrawCubeWires(positions[i], 2.0f, heights[i], 2.0f, MAROON);
-                }
-
-                // Draw player cube
-                if (cameraMode == CAMERA_THIRD_PERSON)
-                {
-                    DrawCube(camera.target, 0.5f, 0.5f, 0.5f, PURPLE);
-                    DrawCubeWires(camera.target, 0.5f, 0.5f, 0.5f, DARKPURPLE);
-                }
+            }
 
             EndMode3D();
 

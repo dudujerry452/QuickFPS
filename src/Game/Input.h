@@ -19,15 +19,12 @@ class InputManager {
     }
 
     void CheckInput();
-    bool IsReady(); 
     InputState Peek(); 
-    void Pop();
 
     private: 
     InputManager() {};
 
     InputState m_state;
-    bool m_isready;
 };
 
 #ifndef IM 

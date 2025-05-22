@@ -17,6 +17,9 @@ class Player: virtual public Entity {
 
     public: 
 
+    Player() = default;
+    virtual ~Player() {};
+
     PlayerState GetState() const; 
 
     protected: 
@@ -30,11 +33,19 @@ class LocalPlayer: virtual public Player{
 
     public: 
 
-    void PushNewInput(const InputState& new_input);
-    void ApplyAuthInput(const PlayerState& auth_state);
+    LocalPlayer() = default;
+    virtual ~LocalPlayer() {}
+
+    void PhysicsUpdate() override;
+
+    
 
     private: 
     std::deque<InputState> m_inputQueue; 
+    private: 
+    // ------ deal with input --------
+    void PushNewInput(const InputState& new_input);
+    void ApplyAuthInput(const PlayerState& auth_state);
 
 };
 

@@ -13,6 +13,10 @@ PlayerState Player::GetState() const {
     };
 }
 
+void LocalPlayer::PhysicsUpdate() {
+    PushNewInput(IM.Peek());
+} 
+
 void LocalPlayer::PushNewInput(const InputState& new_input) {
     // Camera3D tmp = {0};
     // tmp.position = m_pos;
