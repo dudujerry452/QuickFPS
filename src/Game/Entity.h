@@ -14,6 +14,8 @@ class Entity {
         // Data related
         uint32_t GetID() const {return m_id;} 
         void SetID(uint32_t id) {m_id = id;}
+        void SetError(bool value) { m_isError = value; }
+        bool IsError() {return m_isError;}
 
         // Physics related
         Vector3 GetPos() const {return m_pos;}
@@ -29,6 +31,8 @@ class Entity {
 
     protected: 
         uint32_t m_id;
+        bool m_isError;
+
         Vector3 m_pos;
         Vector3 m_forward;
 

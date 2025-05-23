@@ -22,8 +22,11 @@ add_subdirectory(lib/spdlog)
 
 file(GLOB GAME_SOURCES "src/Game/*.cpp")
 file(GLOB GAME_INCLUDE "src/Game/*.h")
+file(GLOB RENDERER_SOURCES "src/Renderer/*.cpp")
+file(GLOB RENDERER_INCLUDE "src/Renderer/*.h")
 add_executable(Main 
                     ${GAME_SOURCES}
+                    ${RENDERER_SOURCES}
                     src/main.cpp
               ) 
 

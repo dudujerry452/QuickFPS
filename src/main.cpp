@@ -112,15 +112,6 @@ int main(void)
             EndMode3D();
 
             // Draw info boxes
-            DrawRectangle(5, 5, 330, 100, Fade(SKYBLUE, 0.5f));
-            DrawRectangleLines(5, 5, 330, 100, BLUE);
-
-            DrawText("Camera controls:", 15, 15, 10, BLACK);
-            DrawText("- Move keys: W, A, S, D, Space, Left-Ctrl", 15, 30, 10, BLACK);
-            DrawText("- Look around: arrow keys or mouse", 15, 45, 10, BLACK);
-            DrawText("- Camera mode keys: 1, 2, 3, 4", 15, 60, 10, BLACK);
-            DrawText("- Zoom keys: num-plus, num-minus or mouse scroll", 15, 75, 10, BLACK);
-            DrawText("- Camera projection key: P", 15, 90, 10, BLACK);
 
             DrawRectangle(600, 5, 195, 100, Fade(SKYBLUE, 0.5f));
             DrawRectangleLines(600, 5, 195, 100, BLUE);

@@ -1,7 +1,7 @@
 #include "World.h"
 #include "inttypes.h"
 
-World::World() {
+World::World(): m_localPlayer(0) {
 
     float heights[MAX_COLUMNS] = { 0 };
     Vector3 positions[MAX_COLUMNS] = { 0 };
@@ -23,10 +23,20 @@ World::World() {
     {
         m_worldMap.objects.push_back({colors[i], BoundingBox({positions[i], (Vector3){2.0f, heights[i], 2.0f}})});
     }
+
+    auto ptr = std::make_unique<Entity>(); // GetEntity
+    ptr->SetError(1);
+    m_entities[0] = std::move(ptr);
 }
 
 World::~World() {
     
+}
+
+std::unique_ptr<Entity>& World::GetEntity(uint32_t obj_id) { 
+    if(m_entities.find(obj_id) != m_entities.end())
+        return m_entities[obj_id]; 
+    else return m_entities[0]; // return error entity
 }
 
 uint32_t World::AddEntity(std::unique_ptr<Entity>&& obj_ptr) {

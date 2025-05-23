@@ -7,7 +7,10 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <assert.h>
 #include <inttypes.h>
+
+#include "spdlog/spdlog.h"
 
 #define MAX_COLUMNS 20
 
@@ -23,11 +26,20 @@ class World {
     // set & get
     void SetMap(const Map& themap) { m_worldMap = themap; }
     Map GetMap() const {return m_worldMap; }
-    auto& GetEntity(uint32_t obj_id) {return m_entities[obj_id]; }
+    std::unique_ptr<Entity>& GetEntity(uint32_t obj_id);
+
+    // single thread 
     uint32_t AddEntity(std::unique_ptr<Entity>&& obj_ptr);
     bool DelObject(uint32_t obj_id);
 
     // player set & get
+    void SetLocalPlayer(uint32_t player_id) {
+        assert(m_entities.find(player_id) != m_entities.end());
+        spdlog::debug("Set LocalPlayer: {}", player_id);
+        m_localPlayer = player_id;
+    }
+    uint32_t GetLocalPlayer() const { return m_localPlayer; }
+
     // uint32_t AddPlayer(std::unique_ptr<Player>&& player_ptr, bool is_local = false);
     // auto GetPlayers() {return m_players;}
     // auto GetLocalPlayer() {return m_localPlayer;}
@@ -46,7 +58,8 @@ class World {
     Map m_worldMap; 
 
     // Runtime -----------------
-    std::map<uint32_t, std::unique_ptr<Entity> > m_entities;
+    std::unordered_map<uint32_t, std::unique_ptr<Entity> > m_entities;
+    uint32_t m_localPlayer;
 
     private: 
 
