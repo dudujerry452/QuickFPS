@@ -11,11 +11,14 @@ class Entity {
         Entity(); 
         virtual ~Entity() {};
 
+
         // Data related
         uint32_t GetID() const {return m_id;} 
         void SetID(uint32_t id) {m_id = id;}
         void SetError(bool value) { m_isError = value; }
         bool IsError() {return m_isError;}
+
+        Entity& operator=(const Entity& other);
 
         // Physics related
         Vector3 GetPos() const {return m_pos;}

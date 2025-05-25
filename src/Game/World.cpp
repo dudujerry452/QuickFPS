@@ -1,5 +1,6 @@
 #include "World.h"
 #include "inttypes.h"
+#include "../Sync/Sync.h"
 
 World::World(): m_localPlayer(0) {
 
@@ -27,6 +28,7 @@ World::World(): m_localPlayer(0) {
     auto ptr = std::make_unique<Entity>(); // GetEntity
     ptr->SetError(1);
     m_entities[0] = std::move(ptr);
+
 }
 
 World::~World() {
@@ -63,9 +65,38 @@ void World::WorldPhysicsUpdate() {
     }
 }
 void World::WorldAnimeUpdate() {
+    bool ret = m_camera.Update();
+    if(!ret) {
+        spdlog::error("Camera Update Failed!");
+        return;
+    }
+    
     for(auto& [id, ent]: m_entities) {
         ent->AnimeUpdate();
     }
+}
+void World::Attach(uint32_t entity_id)
+{ 
+    auto& obj = GetEntity(entity_id);
+    assert(!obj->IsError());
+    m_camera.Connect(this, entity_id);
+}
+
+void World::Attach() {
+    Attach(m_localPlayer);
+}
+
+RenderStateBuffer World::GetRenderState() {
+    RenderStateBuffer render_buffer;
+    // render_buffer.entities.reserve(m_entities.size());
+    for(auto& e: m_entities) {
+        render_buffer.entities.push_back(
+            *e.second // copy data
+        );
+    }
+    render_buffer.objects = m_worldMap.objects;
+    render_buffer.camera = m_camera.GetCamera();
+    return render_buffer;
 }
 
 uint32_t World::NewID() {

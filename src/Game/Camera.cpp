@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include "../Game/World.h"
 
-void WorldCamera::Init() {
+WorldCamera::WorldCamera() {
     m_camera = { 0 };
     m_camera.position = (Vector3){ 0.0f, 2.0f, 4.0f };    // Camera position
     m_camera.target = (Vector3){ 0.0f, 2.0f, 0.0f };      // Camera looking at point
@@ -10,10 +10,17 @@ void WorldCamera::Init() {
     m_camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 }
 
-bool WorldCamera::Update(World* world) {
-    if(!m_follow_id)
-        return false;
-    auto& obj = world->GetEntity(m_follow_id);
+bool WorldCamera::Connect(World* world, uint32_t entity_id) {
+    if(!world) return false;
+    auto& obj = world->GetEntity(entity_id);
+    if(obj->IsError()) return false;
+    m_world = world; 
+    m_followId = entity_id;
+    return true;
+}
+
+bool WorldCamera::Update() {
+    auto& obj = m_world->GetEntity(m_followId);
     if(obj->IsError()) return false; // not exists
 
     m_camera.position = obj->GetPos();

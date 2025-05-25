@@ -41,7 +41,7 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - 3d camera first person");
+    InitWindow(screenWidth, screenHeight, "QuickFPS");
     DisableCursor();                    
     SetTargetFPS(60);                   
     //--------------------------------------------------------------------------------------
@@ -53,17 +53,18 @@ int main(void)
     World world;
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
     world.SetLocalPlayer(plid);
+    world.Attach();
 
     Renderer renderer;
-    renderer.Init();
-    renderer.Attach(&world);
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
     {
         IM.CheckInput();
         world.WorldPhysicsUpdate();
-        renderer.Render(&world);
+        world.WorldAnimeUpdate();
+        renderer.Prepare(world.GetRenderState());
+        renderer.Render();
     }
     //--------------------------------------------------------------------------------------
     CloseWindow();        

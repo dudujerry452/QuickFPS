@@ -7,3 +7,10 @@ Entity::Entity() {
     m_pos = Vector3{0.0f, 0.0f, 0.0f};
     m_id = 0;
 }
+Entity& Entity::operator=(const Entity& other) {
+    m_boundingBox = other.m_boundingBox;
+    m_forward = other.m_forward;
+    m_id = other.m_id;
+    m_isError = other.m_isError;
+    m_pos = other.m_pos;
+}

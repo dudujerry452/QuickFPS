@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Entity.h"
 #include "Player.h"
+#include "Camera.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -13,6 +14,8 @@
 #include "spdlog/spdlog.h"
 
 #define MAX_COLUMNS 20
+
+struct RenderStateBuffer;
 
 class World {
     
@@ -50,6 +53,13 @@ class World {
     // update related
     void WorldPhysicsUpdate(); 
     void WorldAnimeUpdate();
+
+    // camera control 
+    void Attach(uint32_t entity_id);
+    void Attach();
+
+    // render data transmit
+    RenderStateBuffer GetRenderState();
     
 
 
@@ -60,11 +70,11 @@ class World {
     // Runtime -----------------
     std::unordered_map<uint32_t, std::unique_ptr<Entity> > m_entities;
     uint32_t m_localPlayer;
+    WorldCamera m_camera;
 
     private: 
 
     // meta 
-
     static uint32_t NewID();
     
 };

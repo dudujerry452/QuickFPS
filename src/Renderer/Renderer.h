@@ -2,25 +2,22 @@
 #define _RENDERER_H_
 
 #include "../Game/World.h"
-#include "Camera.h"
+#include "../Sync/Sync.h"
 
 class Renderer {
 
     public: 
 
+    Renderer() {};
 
-    void Init(); 
-    // attach view to a object
-    void Attach(World* render_target, uint32_t entity_id);
-    // attach view to player
-    void Attach(World* render_target); 
-    void Render(World* render_target);
-    Camera& GetCamera() {return m_camera.GetCamera(); }
+    void Prepare(RenderStateBuffer&& buffer);
+    void Render();
 
     private:
 
-    WorldCamera m_camera;
+    RenderStateBuffer m_frontBuffer, m_backBuffer;
 
+    
 };
 
 #endif 

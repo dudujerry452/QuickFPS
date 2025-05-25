@@ -1,36 +1,21 @@
 #include "Renderer.h"
 #include "spdlog/spdlog.h"
 
-void Renderer::Init() {
-    m_camera.Init();
+void Renderer::Prepare(RenderStateBuffer&& buffer) {
+    m_backBuffer = std::forward<RenderStateBuffer>(buffer); // copy data
+    std::swap(m_backBuffer, m_frontBuffer);
 }
 
-void Renderer::Attach(World* render_target, uint32_t entity_id)
-{ 
-    auto& obj = render_target->GetEntity(entity_id);
-    assert(!obj->IsError());
-    m_camera.Attach(entity_id); 
-}
-
-void Renderer::Attach(World* render_target) {
-    Attach(render_target, render_target->GetLocalPlayer());
-}
-
-void Renderer::Render(World* render_target) {
-    bool ret = m_camera.Update(render_target);
-    if(!ret) {
-        spdlog::error("Camera Update Failed!");
-        return;
-    }
+void Renderer::Render() {
 
     BeginDrawing();
 
         ClearBackground(RAYWHITE);
 
-        auto& camera = m_camera.GetCamera();
+        auto& camera = m_frontBuffer.camera;
         BeginMode3D(camera);
 
-        for(auto obj : render_target->GetMap().objects) {
+        for(auto obj : m_frontBuffer.objects) {
             DrawCube(obj.colisionBoxes.min, 
             obj.colisionBoxes.max.x, 
             obj.colisionBoxes.max.y,
