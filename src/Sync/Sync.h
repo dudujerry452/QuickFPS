@@ -9,4 +9,9 @@ struct RenderStateBuffer {
     Camera camera;
 };
 
+struct SyncState {
+    std::mutex render_mtx; // 交换数据的锁
+    bool data_is_consumed;
+};
+
 #endif

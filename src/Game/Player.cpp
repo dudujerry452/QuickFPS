@@ -14,16 +14,11 @@ PlayerState Player::GetState() const {
 }
 
 void LocalPlayer::PhysicsUpdate() {
-    PushNewInput(IM.Peek());
+    auto input = IM.Pop();
+    if(input.sequence_number) PushNewInput(input);
 } 
 
 void LocalPlayer::PushNewInput(const InputState& new_input) {
-    // Camera3D tmp = {0};
-    // tmp.position = m_pos;
-    // tmp.target = Vector3Add(m_pos, m_forward);
-    // tmp.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    // tmp.fovy = 60.0f;                                // Camera field-of-view Y
-    // tmp.projection = CAMERA_PERSPECTIVE;             // Camera projection type
     if(GetForward() == Vector3{0, 1, 0} || GetForward() == Vector3{0, -1, 0}) // 避免头顶朝天朝地
         SetForward({1,0,0});
     

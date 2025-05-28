@@ -51,6 +51,7 @@ class World {
     bool IsCollide(uint32_t obj_id);
 
     // update related
+    void WorldUpdate();
     void WorldPhysicsUpdate(); 
     void WorldAnimeUpdate();
 
@@ -60,8 +61,6 @@ class World {
 
     // render data transmit
     RenderStateBuffer GetRenderState();
-    
-
 
     private: 
     // Data ------------------

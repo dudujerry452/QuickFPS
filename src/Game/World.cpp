@@ -59,6 +59,13 @@ bool World::IsCollide(uint32_t obj_id) {
 
 }
 
+void World::WorldUpdate() {
+    WorldPhysicsUpdate(); 
+    WorldAnimeUpdate();
+}
+
+
+
 void World::WorldPhysicsUpdate() {
     for(auto& [id, ent]: m_entities) {
         ent->PhysicsUpdate();

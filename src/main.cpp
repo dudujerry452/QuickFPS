@@ -26,6 +26,8 @@
 
 #define MAX_COLUMNS 20
 
+std::atomic<bool> g_isRunning{false}; 
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -56,17 +58,37 @@ int main(void)
     world.Attach();
 
     Renderer renderer;
+    g_isRunning = true;
+
+    std::mutex mtx;
+    std::condition_variable cv;
+
+    std::thread physical_thread([&] {
+        spdlog::info("Physical Thread Start");
+        while(g_isRunning.load(std::memory_order_relaxed)) {
+            world.WorldUpdate();
+        }
+    });
 
     // Main game loop
-    while (!WindowShouldClose())        // Detect window close button or ESC key
-    {
+    // while (!WindowShouldClose())        // Detect window close button or ESC key
+    // {
+    //     IM.CheckInput();
+    //     world.WorldPhysicsUpdate();
+    //     world.WorldAnimeUpdate();
+    //     renderer.Prepare(world.GetRenderState());
+    //     renderer.Render();
+    // }
+    //--------------------------------------------------------------------------------------
+
+    while(!WindowShouldClose()) {
         IM.CheckInput();
-        world.WorldPhysicsUpdate();
-        world.WorldAnimeUpdate();
         renderer.Prepare(world.GetRenderState());
         renderer.Render();
     }
-    //--------------------------------------------------------------------------------------
+    g_isRunning.store(false, std::memory_order_relaxed);
+    physical_thread.join();
+
     CloseWindow();        
 
     return 0;

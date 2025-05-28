@@ -2,6 +2,7 @@
 #define _INPUT_H_
 #include "raylib.h"
 #include <inttypes.h>
+#include <mutex>
 
 struct InputState {
     Vector2 moveOnPlane;
@@ -20,11 +21,21 @@ class InputManager {
 
     void CheckInput();
     InputState Peek(); 
+    InputState Pop();
 
     private: 
-    InputManager() {};
+    InputManager():m_squenceNumber(1), p_backBuffer(&m_BufferA), 
+                    p_frontBuffer(&m_BufferB){};
 
-    InputState m_state;
+    InputState m_BufferA, m_BufferB;
+    InputState *p_backBuffer, *p_frontBuffer;
+
+    // counter 
+    uint32_t m_squenceNumber;
+
+    // sync related 
+    std::mutex m_swapMutex;
+    bool i_consumed;
 };
 
 #ifndef IM 
