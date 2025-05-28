@@ -25,7 +25,7 @@ void Renderer::Render() {
             // spdlog::debug("camera.x = {}, y = {}, z = {}", camera.target.x, camera.target.y, camera.target.z);
             BeginMode3D(camera);
 
-            for(auto obj : m_frontBuffer->objects) {
+            for(auto& obj : m_frontBuffer->objects) {
                 DrawCube(obj.colisionBoxes.min, 
                 obj.colisionBoxes.max.x, 
                 obj.colisionBoxes.max.y,
@@ -41,6 +41,10 @@ void Renderer::Render() {
 
             }
 
+            // for(auto ent : m_frontBuffer->entities) {
+            //     DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
+            // }
+
             EndMode3D();
 
             // Draw info boxes
@@ -53,6 +57,8 @@ void Renderer::Render() {
             Vector3 tmptar = camera.target;
             DrawText(TextFormat("- Target: (%06.3f, %06.3f, %06.3f)", tmptar.x, tmptar.y, tmptar.z), 610, 75, 10, BLACK);
             DrawText(TextFormat("- Up: (%06.3f, %06.3f, %06.3f)", camera.up.x, camera.up.y, camera.up.z), 610, 90, 10, BLACK);
+
+            DrawText(TextFormat("FPS: %3d", GetFPS()), 5, 5, 10, BLACK);
 
         EndDrawing();
     }

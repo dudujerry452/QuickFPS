@@ -9,6 +9,7 @@
 struct PlayerState {
     Vector3 position; 
     Vector3 forward; 
+    Vector3 velocity; 
     uint32_t health; 
     uint32_t weapon;
 };
@@ -17,7 +18,7 @@ class Player: virtual public Entity {
 
     public: 
 
-    Player() = default;
+    Player();
     virtual ~Player() {};
 
     PlayerState GetState() const; 
@@ -33,7 +34,7 @@ class LocalPlayer: virtual public Player{
 
     public: 
 
-    LocalPlayer() = default;
+    LocalPlayer();
     virtual ~LocalPlayer() {}
 
     void PhysicsUpdate() override;

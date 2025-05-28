@@ -4,44 +4,63 @@
 
 #include "spdlog/spdlog.h"
 
+Player::Player() {
+    m_entityType = EntityType::Player;   
+}
+
 PlayerState Player::GetState() const {
     return PlayerState{
         m_pos,
         m_forward, 
+        m_velocity, 
         m_health, 
         m_weapon
     };
 }
 
+LocalPlayer::LocalPlayer() {
+    m_entityType = EntityType::LocalPlayer;
+}
+
 void LocalPlayer::PhysicsUpdate() {
     auto input = IM.Pop();
     if(input.sequence_number) PushNewInput(input);
+    Vector2 v2d{m_velocity.x, m_velocity.z};
+    if(Vector2Length(v2d) > 0.0001f) {
+        v2d = v2d - Vector2Scale(v2d, 0.0001f);
+    } else {
+        v2d = {0,0};
+    }
+    m_velocity.x = v2d.x, m_velocity.z = v2d.y;
 } 
 
 void LocalPlayer::PushNewInput(const InputState& new_input) {
-    if(GetForward() == Vector3{0, 1, 0} || GetForward() == Vector3{0, -1, 0}) // 避免头顶朝天朝地
+    Vector2 fow{GetForward().x, GetForward().z};
+    if(Vector2Length(fow) < 0.00001f) 
         SetForward({1,0,0});
     
     Camera3D tmp = { 0 };
     tmp.position = GetPos();    
-    // tmp position
     tmp.target = GetPos() + GetForward();      // tmp looking at point
     tmp.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // tmp up vector (rotation towards target)
-    tmp.fovy = 60.0f;                                // tmp field-of-view Y
-    tmp.projection = CAMERA_PERSPECTIVE;             // tmp projection type
 
-    UpdateCameraPro(
-        &tmp,
-        Vector3{new_input.moveOnPlane.x*0.1f,
-                new_input.moveOnPlane.y*0.1f, 
-                0.0f}, 
-        Vector3{new_input.mouseDelta.x*0.05f, 
-            new_input.mouseDelta.y*0.05f, 0.f},
-        // Vector3{0.01, 0.0f, 0.0f}, 
-        0.0f
-    );
-    SetPos(tmp.position);
-    // SetForward(tmp.target);
+    CameraYaw(&tmp, -new_input.mouseDelta.x*0.005f, false);
+    CameraPitch(&tmp, -new_input.mouseDelta.y*0.005f, true, false, true);
     SetForward(tmp.target - tmp.position);
+
+    Vector2 mov{new_input.moveOnPlane.x, new_input.moveOnPlane.y};
+    Vector2 fow2;
+    fow = Vector2Normalize(fow);
+    fow2 = {-fow.y, fow.x};
+    mov = Vector2Normalize(mov);
+    mov = Vector2Scale(mov, 0.1f);
+
+    Vector2 delta {
+        fow.x*mov.x + fow2.x * mov.y, 
+        fow.y*mov.x + fow2.y * mov.y
+    };
+    m_velocity.x = delta.x*0.0011; 
+    m_velocity.z = delta.y*0.0011;
+
     m_inputQueue.push_back(new_input);
 }

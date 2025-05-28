@@ -1,5 +1,6 @@
 #include "World.h"
 #include "inttypes.h"
+#include "Physics.h"
 #include "../Sync/Sync.h"
 
 World::World(): m_localPlayer(0) {
@@ -55,9 +56,6 @@ bool World::DelObject(uint32_t obj_id) {
 //     m_players.push_back(id);
 // }
 
-bool World::IsCollide(uint32_t obj_id) {
-
-}
 
 void World::WorldUpdate() {
     WorldPhysicsUpdate(); 
@@ -70,6 +68,7 @@ void World::WorldPhysicsUpdate() {
     for(auto& [id, ent]: m_entities) {
         ent->PhysicsUpdate();
     }
+    Physics::UpdatePhysicalWorld(*this);
 }
 void World::WorldAnimeUpdate() {
     bool ret = m_camera.Update();

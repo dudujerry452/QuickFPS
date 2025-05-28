@@ -47,9 +47,6 @@ class World {
     // auto GetPlayers() {return m_players;}
     // auto GetLocalPlayer() {return m_localPlayer;}
 
-    // runtime 
-    bool IsCollide(uint32_t obj_id);
-
     // update related
     void WorldUpdate();
     void WorldPhysicsUpdate(); 
@@ -61,6 +58,8 @@ class World {
 
     // render data transmit
     RenderStateBuffer GetRenderState();
+
+    friend class Physics;
 
     private: 
     // Data ------------------

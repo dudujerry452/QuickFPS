@@ -5,7 +5,10 @@ Entity::Entity() {
 
     m_forward = Vector3{0.0f, 2.0f, 0.0f};
     m_pos = Vector3{0.0f, 0.0f, 0.0f};
+    m_velocity = Vector3{0.0f, 0.0f, 0.0f};
     m_id = 0;
+
+    m_entityType = EntityType::Base;
 }
 Entity& Entity::operator=(const Entity& other) {
     m_boundingBox = other.m_boundingBox;

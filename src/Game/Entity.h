@@ -5,8 +5,15 @@
 #include "raymath.h"
 #include <inttypes.h>
 
-
 class Entity {
+
+    public: 
+    enum class EntityType {
+        Base, // most basic
+        Player, 
+        LocalPlayer
+    };
+
     public: 
         Entity(); 
         virtual ~Entity() {};
@@ -32,13 +39,21 @@ class Entity {
         virtual void PhysicsUpdate() {}; 
         virtual void AnimeUpdate() {}; 
 
+    friend class Physics;
+
     protected: 
+
+        // meta data 
+        EntityType m_entityType;
         uint32_t m_id;
         bool m_isError;
 
+        // physical variable
         Vector3 m_pos;
         Vector3 m_forward;
+        Vector3 m_velocity;
 
+        // Collission ralated
         BoundingBox m_boundingBox;
 };
 

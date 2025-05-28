@@ -70,17 +70,6 @@ int main(void)
         }
     });
 
-    // Main game loop
-    // while (!WindowShouldClose())        // Detect window close button or ESC key
-    // {
-    //     IM.CheckInput();
-    //     world.WorldPhysicsUpdate();
-    //     world.WorldAnimeUpdate();
-    //     renderer.Prepare(world.GetRenderState());
-    //     renderer.Render();
-    // }
-    //--------------------------------------------------------------------------------------
-
     while(!WindowShouldClose()) {
         IM.CheckInput();
         renderer.Prepare(world.GetRenderState());
