@@ -16,4 +16,5 @@ Entity& Entity::operator=(const Entity& other) {
     m_id = other.m_id;
     m_isError = other.m_isError;
     m_pos = other.m_pos;
+    return *this;
 }

@@ -52,6 +52,10 @@ class World {
     void WorldPhysicsUpdate(); 
     void WorldAnimeUpdate();
 
+    void SetFPS(uint32_t fps); 
+    void UpdateFPS(uint32_t duration);
+    uint32_t GetFPS();
+
     // camera control 
     void Attach(uint32_t entity_id);
     void Attach();
@@ -74,6 +78,14 @@ class World {
 
     // meta 
     static uint32_t NewID();
+
+    // FPS variable
+    uint32_t m_targetFPS;
+    uint32_t m_FPS_targetDuration;
+    uint32_t m_FPS_duration[5];
+    uint32_t m_FPS_cnt;
+    uint32_t m_FPS;
+
     
 };
 

@@ -25,7 +25,11 @@ class InputManager {
 
     private: 
     InputManager():m_squenceNumber(1), p_backBuffer(&m_BufferA), 
-                    p_frontBuffer(&m_BufferB){};
+                    p_frontBuffer(&m_BufferB) 
+                    {
+                        memset(m_wasd, 0, sizeof(m_wasd));
+                        memset(m_mouse, 0, sizeof(m_mouse));
+                    };
 
     InputState m_BufferA, m_BufferB;
     InputState *p_backBuffer, *p_frontBuffer;
@@ -36,6 +40,10 @@ class InputManager {
     // sync related 
     std::mutex m_swapMutex;
     bool i_consumed;
+
+    // press or not pressed 
+    bool m_wasd[4];
+    bool m_mouse[2];
 };
 
 #ifndef IM 

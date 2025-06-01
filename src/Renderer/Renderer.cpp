@@ -41,13 +41,19 @@ void Renderer::Render() {
 
             }
 
-            // for(auto ent : m_frontBuffer->entities) {
-            //     DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
-            // }
 
             EndMode3D();
 
             // Draw info boxes
+            for(auto& ent : m_frontBuffer->entities) {
+                DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
+                if(ent.GetType() == Entity::EntityType::LocalPlayer) {
+                    DrawText(
+                        TextFormat(
+                            "Velocity: %06.3f", Vector3Length(ent.GetVelocity())
+                        ), 5, 25, 10, BLACK);
+                }
+            }
 
             DrawRectangle(600, 5, 195, 100, Fade(SKYBLUE, 0.5f));
             DrawRectangleLines(600, 5, 195, 100, BLUE);
@@ -59,6 +65,7 @@ void Renderer::Render() {
             DrawText(TextFormat("- Up: (%06.3f, %06.3f, %06.3f)", camera.up.x, camera.up.y, camera.up.z), 610, 90, 10, BLACK);
 
             DrawText(TextFormat("FPS: %3d", GetFPS()), 5, 5, 10, BLACK);
+            DrawText(TextFormat("PFPS: %3d", m_frontBuffer->pfps), 5, 15, 10, BLACK);
 
         EndDrawing();
     }

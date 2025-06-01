@@ -1,6 +1,7 @@
 #include "World.h"
 #include "inttypes.h"
 #include "Physics.h"
+#include <assert.h>
 #include "../Sync/Sync.h"
 
 World::World(): m_localPlayer(0) {
@@ -30,6 +31,10 @@ World::World(): m_localPlayer(0) {
     ptr->SetError(1);
     m_entities[0] = std::move(ptr);
 
+    SetFPS(60); // default fps = 60
+    memset(m_FPS_duration, 0, sizeof(m_FPS_duration));
+    m_FPS_cnt = 0;
+    m_FPS = 0;
 }
 
 World::~World() {
@@ -44,6 +49,7 @@ std::unique_ptr<Entity>& World::GetEntity(uint32_t obj_id) {
 
 uint32_t World::AddEntity(std::unique_ptr<Entity>&& obj_ptr) {
     auto id = NewID();
+    obj_ptr->SetID(id);
     m_entities[id] = std::forward<decltype(obj_ptr)>(obj_ptr);
     return id;
 }
@@ -58,8 +64,14 @@ bool World::DelObject(uint32_t obj_id) {
 
 
 void World::WorldUpdate() {
+    auto now = std::chrono::steady_clock::now();
     WorldPhysicsUpdate(); 
     WorldAnimeUpdate();
+    auto end = std::chrono::steady_clock::now(); 
+    uint32_t duration = static_cast<uint32_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - now).count()
+    );
+    UpdateFPS(duration);
 }
 
 
@@ -81,6 +93,35 @@ void World::WorldAnimeUpdate() {
         ent->AnimeUpdate();
     }
 }
+
+void World::SetFPS(uint32_t fps) {
+    assert(fps != 0);
+    m_targetFPS = fps;
+    m_FPS_targetDuration = static_cast<uint32_t>(1000/fps);
+}
+
+void World::UpdateFPS(uint32_t duration) {
+    if(duration < m_FPS_targetDuration) {
+        uint32_t remain = m_FPS_targetDuration - duration;
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(remain)
+        );
+        duration = m_FPS_targetDuration;
+    }
+    m_FPS_duration[m_FPS_cnt] = duration;
+    m_FPS_cnt = (m_FPS_cnt+1)%5;
+    uint32_t sum = 0;
+    for(int i = 0; i < 5; i ++) {
+        sum += m_FPS_duration[i];
+    }
+    if(sum == 0) sum = 1;
+    m_FPS = 5000/sum;
+}
+
+uint32_t World::GetFPS() {
+    return m_FPS;
+}
+
 void World::Attach(uint32_t entity_id)
 { 
     auto& obj = GetEntity(entity_id);
@@ -102,6 +143,7 @@ RenderStateBuffer World::GetRenderState() {
     }
     render_buffer.objects = m_worldMap.objects;
     render_buffer.camera = m_camera.GetCamera();
+    render_buffer.pfps = GetFPS();
     return render_buffer;
 }
 

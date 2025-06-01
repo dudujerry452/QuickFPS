@@ -5,14 +5,23 @@
 void InputManager::CheckInput() {
     auto& m_state = *p_backBuffer;
     m_state = InputState();
-    m_state.moveOnPlane.x = IsKeyDown(KEY_W)*1.0f - 
-                    IsKeyDown(KEY_S)*1.0f;
-    m_state.moveOnPlane.y = IsKeyDown(KEY_D)*1.0f - 
-                    IsKeyDown(KEY_A)*1.0f;
+    if(IsKeyPressed(KEY_W)) m_wasd[0] = 1;
+    if(IsKeyPressed(KEY_A)) m_wasd[1] = 1;
+    if(IsKeyPressed(KEY_S)) m_wasd[2] = 1;
+    if(IsKeyPressed(KEY_D)) m_wasd[3] = 1;
+    if(IsKeyReleased(KEY_W)) m_wasd[0] = 0;
+    if(IsKeyReleased(KEY_A)) m_wasd[1] = 0;
+    if(IsKeyReleased(KEY_S)) m_wasd[2] = 0;
+    if(IsKeyReleased(KEY_D)) m_wasd[3] = 0;
+
+    m_state.moveOnPlane.x = m_wasd[0]*1.0f - 
+                    m_wasd[2]*1.0f;
+    m_state.moveOnPlane.y = m_wasd[3]*1.0f - 
+                    m_wasd[1]*1.0f;
     m_state.mouseDelta = GetMouseDelta();
-    m_state.sequence_number = m_squenceNumber++;
     {
         std::lock_guard<std::mutex> lock(m_swapMutex);
+        m_state.sequence_number = m_squenceNumber++;
         std::swap(p_backBuffer, p_frontBuffer);
         i_consumed = 0;
     }
@@ -26,7 +35,19 @@ InputState InputManager::Peek() {
 
 InputState InputManager::Pop() {
     std::lock_guard<std::mutex> lock(m_swapMutex);
-    if(i_consumed) p_frontBuffer->sequence_number = 0;
+    if(!i_consumed) {
+        i_consumed = 1;
+        return *p_frontBuffer;
+    }
+    if(m_wasd[0] || m_wasd[1] || m_wasd[2] || m_wasd[3]) {
+        p_frontBuffer->moveOnPlane.x = m_wasd[0]*1.0f - 
+                        m_wasd[2]*1.0f;
+        p_frontBuffer->moveOnPlane.y = m_wasd[3]*1.0f - 
+                        m_wasd[1]*1.0f;
+        p_frontBuffer->mouseDelta = {0, 0};
+        p_frontBuffer->sequence_number = m_squenceNumber++;
+    }
+    else p_frontBuffer->sequence_number = 0;
     i_consumed = 1;
     return *p_frontBuffer;
 }

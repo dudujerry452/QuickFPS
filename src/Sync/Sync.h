@@ -7,6 +7,8 @@ struct RenderStateBuffer {
     std::vector<Entity> entities;
     std::vector<MapObject> objects;
     Camera camera;
+
+    uint32_t pfps;
 };
 
 struct SyncState {

@@ -26,8 +26,8 @@ void LocalPlayer::PhysicsUpdate() {
     auto input = IM.Pop();
     if(input.sequence_number) PushNewInput(input);
     Vector2 v2d{m_velocity.x, m_velocity.z};
-    if(Vector2Length(v2d) > 0.0001f) {
-        v2d = v2d - Vector2Scale(v2d, 0.0001f);
+    if(Vector2Length(v2d) > 0.07f) {
+        v2d = v2d - Vector2Scale(v2d, 0.07f);
     } else {
         v2d = {0,0};
     }
@@ -59,8 +59,10 @@ void LocalPlayer::PushNewInput(const InputState& new_input) {
         fow.x*mov.x + fow2.x * mov.y, 
         fow.y*mov.x + fow2.y * mov.y
     };
-    m_velocity.x = delta.x*0.0011; 
-    m_velocity.z = delta.y*0.0011;
+    if(abs(new_input.moveOnPlane.x) > 0 || abs(new_input.moveOnPlane.y) > 0) {
+        m_velocity.x = delta.x; 
+        m_velocity.z = delta.y;
+    }
 
     m_inputQueue.push_back(new_input);
 }
