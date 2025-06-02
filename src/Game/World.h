@@ -13,7 +13,6 @@
 
 #include "spdlog/spdlog.h"
 
-#define MAX_COLUMNS 20
 
 struct RenderStateBuffer;
 

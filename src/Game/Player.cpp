@@ -6,6 +6,11 @@
 
 Player::Player() {
     m_entityType = EntityType::Player;   
+    m_boundingBox = BoundingBox{
+        Vector3{0,0,0}, 
+        Vector3{1,2,1}
+    };
+    m_posPoint = {0.5f, 1.5f, 0.5f};
 }
 
 PlayerState Player::GetState() const {

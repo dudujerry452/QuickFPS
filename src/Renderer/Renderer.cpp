@@ -1,6 +1,13 @@
 #include "Renderer.h"
 #include "spdlog/spdlog.h"
 
+void RenderAABB(BoundingBox box, Color color) {
+    Vector3 min = box.min;
+    Vector3 max = box.max;
+    DrawCubeV(Vector3Scale(Vector3Add(min, max), 0.5f), Vector3Subtract(max, min), color);
+    DrawCubeWiresV(Vector3Scale(Vector3Add(min, max), 0.5f), Vector3Subtract(max, min), MAROON);
+}
+
 
 
 void Renderer::Prepare(RenderStateBuffer&& buffer) {
@@ -22,23 +29,17 @@ void Renderer::Render() {
             ClearBackground(RAYWHITE);
 
             auto& camera = m_frontBuffer->camera;
-            // spdlog::debug("camera.x = {}, y = {}, z = {}", camera.target.x, camera.target.y, camera.target.z);
             BeginMode3D(camera);
 
             for(auto& obj : m_frontBuffer->objects) {
-                DrawCube(obj.colisionBoxes.min, 
-                obj.colisionBoxes.max.x, 
-                obj.colisionBoxes.max.y,
-                obj.colisionBoxes.max.z,
-                obj.color
-                );
-                DrawCubeWires(obj.colisionBoxes.min, 
-                obj.colisionBoxes.max.x, 
-                obj.colisionBoxes.max.y,
-                obj.colisionBoxes.max.z,
-                MAROON
-                );
-
+                RenderAABB(obj.colisionBoxes, obj.color);
+            }
+            for(auto& ent : m_frontBuffer->entities) {
+                if(ent.IsError()) continue;
+                DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
+                if(ent.GetType() == Entity::EntityType::LocalPlayer) {
+                    RenderAABB(ent.GetGlobalBoundingBox(), BLUE);
+                }
             }
 
 
@@ -46,7 +47,8 @@ void Renderer::Render() {
 
             // Draw info boxes
             for(auto& ent : m_frontBuffer->entities) {
-                DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
+                if(ent.IsError()) continue;
+                // DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
                 if(ent.GetType() == Entity::EntityType::LocalPlayer) {
                     DrawText(
                         TextFormat(

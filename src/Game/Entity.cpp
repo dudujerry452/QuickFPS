@@ -9,6 +9,8 @@ Entity::Entity() {
     m_id = 0;
 
     m_entityType = EntityType::Base;
+    
+    m_posPoint = {0.0f, 0.0f, 0.0f};
 }
 Entity& Entity::operator=(const Entity& other) {
     m_boundingBox = other.m_boundingBox;

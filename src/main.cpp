@@ -48,14 +48,27 @@ int main(void)
     SetTargetFPS(60);                   
     //--------------------------------------------------------------------------------------
 
+    BoundingBox bb{Vector3{2,2,2}, Vector3{2.2,2.2,2.2}};
+    BoundingBox bb2{Vector3{2.3, 2.3, 2.3}, Vector3{4,4,4}};
+    if(CheckCollisionBoxes(bb, bb2)) {
+        spdlog::debug("col");
+    }
+
     LocalPlayer player;
-    player.SetPos({0,2,4});
+    player.SetPos({0,1.5,4});
     player.SetForward({0,1,0});
+
+    Entity obs;
+    obs.SetPos({-7, 12, 5});
+    obs.SetForward({1, -1, 0});
+    // obs.SetPos({-10, -2, 0});
+    // obs.SetForward({1, 0, 0});
 
     World world;
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
+    auto ob = world.AddEntity(std::move(std::make_unique<Entity>(obs)));
     world.SetLocalPlayer(plid);
-    world.Attach();
+    world.Attach(ob);
 
     Renderer renderer;
     g_isRunning = true;
