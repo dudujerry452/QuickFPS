@@ -42,7 +42,7 @@ class InputManager {
     bool i_consumed;
 
     // press or not pressed 
-    bool m_wasd[4];
+    bool m_wasd[4], m_space;
     bool m_mouse[2];
 };
 

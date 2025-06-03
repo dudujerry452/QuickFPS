@@ -37,6 +37,8 @@ void LocalPlayer::PhysicsUpdate() {
         v2d = {0,0};
     }
     m_velocity.x = v2d.x, m_velocity.z = v2d.y;
+
+    m_velocity.y -= 0.01f; // gravity
 } 
 
 void LocalPlayer::PushNewInput(const InputState& new_input) {
@@ -67,6 +69,10 @@ void LocalPlayer::PushNewInput(const InputState& new_input) {
     if(abs(new_input.moveOnPlane.x) > 0 || abs(new_input.moveOnPlane.y) > 0) {
         m_velocity.x = delta.x; 
         m_velocity.z = delta.y;
+    }
+
+    if(m_velocity.y == 0.0f && new_input.isJumping) {
+        m_velocity.y = 0.2f; // jump velocity
     }
 
     m_inputQueue.push_back(new_input);

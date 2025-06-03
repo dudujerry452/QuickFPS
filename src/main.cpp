@@ -68,7 +68,7 @@ int main(void)
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
     auto ob = world.AddEntity(std::move(std::make_unique<Entity>(obs)));
     world.SetLocalPlayer(plid);
-    world.Attach(ob);
+    world.Attach();
 
     Renderer renderer;
     g_isRunning = true;
