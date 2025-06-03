@@ -79,7 +79,7 @@ int main(void)
     std::thread physical_thread([&] {
         spdlog::info("Physical Thread Start");
         while(g_isRunning.load(std::memory_order_relaxed)) {
-            world.WorldUpdate();
+            world.WorldUpdateFixed();
         }
     });
 

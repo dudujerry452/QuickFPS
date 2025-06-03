@@ -23,25 +23,7 @@ PlayerState Player::GetState() const {
     };
 }
 
-LocalPlayer::LocalPlayer() {
-    m_entityType = EntityType::LocalPlayer;
-}
-
-void LocalPlayer::PhysicsUpdate() {
-    auto input = IM.Pop();
-    if(input.sequence_number) PushNewInput(input);
-    Vector2 v2d{m_velocity.x, m_velocity.z};
-    if(Vector2Length(v2d) > 0.07f) {
-        v2d = v2d - Vector2Scale(v2d, 0.07f);
-    } else {
-        v2d = {0,0};
-    }
-    m_velocity.x = v2d.x, m_velocity.z = v2d.y;
-
-    m_velocity.y -= 0.01f; // gravity
-} 
-
-void LocalPlayer::PushNewInput(const InputState& new_input) {
+void Player::PushNewInput(const InputState& new_input) {
     Vector2 fow{GetForward().x, GetForward().z};
     if(Vector2Length(fow) < 0.00001f) 
         SetForward({1,0,0});
@@ -75,5 +57,25 @@ void LocalPlayer::PushNewInput(const InputState& new_input) {
         m_velocity.y = 0.2f; // jump velocity
     }
 
-    m_inputQueue.push_back(new_input);
 }
+
+LocalPlayer::LocalPlayer() {
+    m_entityType = EntityType::LocalPlayer;
+}
+
+void LocalPlayer::PhysicsUpdate() {
+    auto input = IM.Pop();
+    if(input.sequence_number) {
+        PushNewInput(input);
+        m_inputQueue.push_back(input);
+    } 
+    Vector2 v2d{m_velocity.x, m_velocity.z};
+    if(Vector2Length(v2d) > 0.07f) {
+        v2d = v2d - Vector2Scale(v2d, 0.07f);
+    } else {
+        v2d = {0,0};
+    }
+    m_velocity.x = v2d.x, m_velocity.z = v2d.y;
+
+    m_velocity.y -= 0.01f; // gravity
+} 

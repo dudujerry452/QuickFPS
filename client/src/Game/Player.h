@@ -23,6 +23,11 @@ class Player: virtual public Entity {
 
     PlayerState GetState() const; 
 
+    protected:
+    // ------ deal with input --------
+    void PushNewInput(const InputState& new_input);
+    void ApplyAuthInput(const PlayerState& auth_state);
+
     protected: 
     uint32_t m_health; 
     uint32_t m_weapon;
@@ -44,9 +49,6 @@ class LocalPlayer: virtual public Player{
     private: 
     std::deque<InputState> m_inputQueue; 
     private: 
-    // ------ deal with input --------
-    void PushNewInput(const InputState& new_input);
-    void ApplyAuthInput(const PlayerState& auth_state);
 
 };
 

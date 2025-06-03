@@ -48,6 +48,7 @@ class World {
 
     // update related
     void WorldUpdate();
+    void WorldUpdateFixed();
     void WorldPhysicsUpdate(); 
     void WorldAnimeUpdate();
 

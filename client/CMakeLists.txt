@@ -1,13 +1,8 @@
-project(QuickFPS)
 cmake_minimum_required(VERSION 3.28)
+project(QuickFPS)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
-
-# if()
-
-# set(CMAKE_PREFIX_PATH "D:/raylib" ${CMAKE_PREFIX_PATH})
-# find_package(raylib REQUIRED)
 
 if (APPLE) 
     set(RAYLIB_DIR lib/raylib-5.5_macos)

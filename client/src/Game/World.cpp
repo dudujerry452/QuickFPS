@@ -60,6 +60,11 @@ bool World::DelObject(uint32_t obj_id) {
 }
 
 void World::WorldUpdate() {
+    WorldPhysicsUpdate(); 
+    WorldAnimeUpdate();
+}
+
+void World::WorldUpdateFixed() {
     auto now = std::chrono::steady_clock::now();
     WorldPhysicsUpdate(); 
     WorldAnimeUpdate();
