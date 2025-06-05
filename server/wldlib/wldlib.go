@@ -3,16 +3,17 @@ package wldlib
 /*
 #cgo CFLAGS: -I.
 
-// macOS LDFLAGS:
-#cgo darwin LDFLAGS: -L. -lwldcapi -lspdlogd -lc++ -lraylib -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
-// 如果 raylib 和 wldcapi 依赖 spdlog 且 spdlog 未编译进去, 你可能还需要:
-// #cgo darwin LDFLAGS: -L. -lwldcapi -L/path/to/your/spdlog_build/lib -lspdlog -lraylib -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
+// macOS LDFLAGS (无 Raylib):
+#cgo darwin LDFLAGS: -L.  -lwldcapi -lGameLogic  -lspdlogd -lc++
 
-// Linux LDFLAGS (保留，以备跨平台):
-// #cgo linux LDFLAGS: -L. -lwldcapi -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -L/path/to/spdlog/lib -lspdlog
 
-// Windows (MinGW) LDFLAGS (保留，以备跨平台):
-// #cgo windows LDFLAGS: -L. -lwldcapi -lraylib -lopengl32 -lgdi32 -lwinmm -pthread -L/path/to/spdlog/lib -lspdlog
+// Linux LDFLAGS (无 Raylib, 保留，以备跨平台):
+// #cgo linux LDFLAGS: -L. -lGameLogic -lwldcapi -lspdlogd -lstdc++ -lm -lpthread -ldl
+
+
+// Windows (MinGW) LDFLAGS (无 Raylib, 保留，以备跨平台):
+// #cgo windows LDFLAGS: -L. -lGameLogic -lwldcapi -lspdlogd -pthread
+
 
 #include "c_api.h"
 #include <stdlib.h>

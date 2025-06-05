@@ -92,7 +92,7 @@ void PushPlayerInput(WorldHandle world, uint32_t player_id,
     auto& player = w->GetEntity(player_id);
     if(player) {
         if(auto p = dynamic_cast<LocalPlayer*>(player.get())) {
-            InputState input;
+            util::InputState input;
             input.moveOnPlane = {move_x, move_y};
             input.mouseDelta = {mouse_delta_x, mouse_delta_y};
             input.isJumping = is_jumping;

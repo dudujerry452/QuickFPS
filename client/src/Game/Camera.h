@@ -1,8 +1,8 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
-#include "raylib.h"
-#include "rcamera.h"
+#include "../Util/Util.h"
+#include "../Util/rcamera.h"
 #include <inttypes.h>
 
 class World;

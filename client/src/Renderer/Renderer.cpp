@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "spdlog/spdlog.h"
 
-void RenderAABB(BoundingBox box, Color color) {
+void RenderAABB(util::BoundingBox box, Color color) {
     Vector3 min = box.min;
     Vector3 max = box.max;
     DrawCubeV(Vector3Scale(Vector3Add(min, max), 0.5f), Vector3Subtract(max, min), color);
@@ -32,7 +32,8 @@ void Renderer::Render() {
             BeginMode3D(camera);
 
             for(auto& obj : m_frontBuffer->objects) {
-                RenderAABB(obj.colisionBoxes, obj.color);
+                RenderAABB(obj.colisionBoxes, 
+                    (Color){obj.color.r, obj.color.g, obj.color.b, obj.color.a});
             }
             for(auto& ent : m_frontBuffer->entities) {
                 if(ent.IsError()) continue;

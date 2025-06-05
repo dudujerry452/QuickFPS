@@ -4,7 +4,7 @@
 
 void InputManager::CheckInput() {
     auto& m_state = *p_backBuffer;
-    m_state = InputState();
+    m_state = util::InputState();
     if(IsKeyPressed(KEY_W)) m_wasd[0] = 1;
     if(IsKeyPressed(KEY_A)) m_wasd[1] = 1;
     if(IsKeyPressed(KEY_S)) m_wasd[2] = 1;
@@ -30,13 +30,13 @@ void InputManager::CheckInput() {
     }
 }
 
-InputState InputManager::Peek() {
+util::InputState InputManager::Peek() {
     std::lock_guard<std::mutex> lock(m_swapMutex);
     if(i_consumed) p_frontBuffer->sequence_number = 0; // invalid
     return *p_frontBuffer;
 }
 
-InputState InputManager::Pop() {
+util::InputState InputManager::Pop() {
     std::lock_guard<std::mutex> lock(m_swapMutex);
     if(!i_consumed) {
         i_consumed = 1;

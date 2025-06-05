@@ -10,15 +10,29 @@
 
 Player::Player() {
     m_entityType = EntityType::Player;   
-    m_boundingBox = BoundingBox{
+    m_boundingBox = util::BoundingBox{
         Vector3{0,0,0}, 
         Vector3{1,2,1}
     };
     m_posPoint = {0.5f, 1.5f, 0.5f};
 }
 
-PlayerState Player::GetState() const {
-    return PlayerState{
+void Player::PhysicsUpdate() {
+    Entity::PhysicsUpdate();
+    // auto input = IM.Pop();
+    Vector2 v2d{m_velocity.x, m_velocity.z};
+    if(Vector2Length(v2d) > 0.07f) {
+        v2d = v2d - Vector2Scale(v2d, 0.07f);
+    } else {
+        v2d = {0,0};
+    }
+    m_velocity.x = v2d.x, m_velocity.z = v2d.y;
+
+    m_velocity.y -= 0.005f; // gravity
+} 
+
+util::PlayerState Player::GetState() const {
+    return util::PlayerState{
         m_pos,
         m_forward, 
         m_velocity, 
@@ -27,7 +41,12 @@ PlayerState Player::GetState() const {
     };
 }
 
-void Player::PushNewInput(const InputState& new_input) {
+void Player::PushNewInput(const util::InputState& new_input) {
+    if(!new_input.sequence_number) {
+        return;
+        // PushNewInput(new_input);
+        // m_inputQueue.push_back(input);
+    } 
     Vector2 fow{GetForward().x, GetForward().z};
     if(Vector2Length(fow) < 0.00001f) 
         SetForward({1,0,0});
@@ -66,20 +85,9 @@ void Player::PushNewInput(const InputState& new_input) {
 LocalPlayer::LocalPlayer() {
     m_entityType = EntityType::LocalPlayer;
 }
-
-void LocalPlayer::PhysicsUpdate() {
-    auto input = IM.Pop();
-    if(input.sequence_number) {
-        PushNewInput(input);
-        m_inputQueue.push_back(input);
+void LocalPlayer::PushNewInput(const util::InputState& new_input) {
+    if(new_input.sequence_number) {
+        Player::PushNewInput(new_input);
+        m_inputQueue.push_back(new_input);
     } 
-    Vector2 v2d{m_velocity.x, m_velocity.z};
-    if(Vector2Length(v2d) > 0.07f) {
-        v2d = v2d - Vector2Scale(v2d, 0.07f);
-    } else {
-        v2d = {0,0};
-    }
-    m_velocity.x = v2d.x, m_velocity.z = v2d.y;
-
-    m_velocity.y -= 0.005f; // gravity
-} 
+}

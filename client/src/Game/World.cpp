@@ -2,7 +2,37 @@
 #include "inttypes.h"
 #include "Physics.h"
 #include <assert.h>
-#include "../Sync/Sync.h"
+
+namespace util {
+int IGetRandomValue(int min, int max)
+{
+    int value = 0;
+
+    if (min > max)
+    {
+        int tmp = max;
+        max = min;
+        min = tmp;
+    }
+
+#if defined(SUPPORT_RPRAND_GENERATOR)
+    value = rprand_get_value(min, max);
+#else
+    // WARNING: Ranges higher than RAND_MAX will return invalid results
+    // More specifically, if (max - min) > INT_MAX there will be an overflow,
+    // and otherwise if (max - min) > RAND_MAX the random value will incorrectly never exceed a certain threshold
+    // NOTE: Depending on the library it can be as low as 32767
+    if ((unsigned int)(max - min) > (unsigned int)RAND_MAX)
+    {
+        throw std::runtime_error("GetRandomValue: Range exceeds RAND_MAX, use a different method for larger ranges");
+    }
+
+    value = (rand()%(abs(max - min) + 1) + min);
+#endif
+    return value;
+}
+}
+
 
 World::World(): m_localPlayer(0) {
 
@@ -10,23 +40,23 @@ World::World(): m_localPlayer(0) {
 
     float heights[MAX_COLUMNS] = { 0 };
     Vector3 positions[MAX_COLUMNS] = { 0 };
-    Color colors[MAX_COLUMNS] = { 0 };
+    util::Color colors[MAX_COLUMNS] = { 0 };
 
     for (int i = 0; i < MAX_COLUMNS; i++)
     {
-        heights[i] = (float)GetRandomValue(1, 12);
+        heights[i] = (float)util::IGetRandomValue(1, 12);
         positions[i] = (Vector3){ 2.f, 0.0f , 2.f };
-        colors[i] = (Color){ (unsigned char)GetRandomValue(20, 255), (unsigned char)GetRandomValue(10, 55), 30, 255 };
+        colors[i] = (util::Color){ (unsigned char)util::IGetRandomValue(20, 255), (unsigned char)util::IGetRandomValue(10, 55), 30, 255 };
     }
 
-    m_worldMap.objects.push_back({LIGHTGRAY, BoundingBox({(Vector3){0.0f, -0.5f, 0.0f}, (Vector3){32.0f, -0.1f, 32.0f}})});
-    m_worldMap.objects.push_back({BLUE, BoundingBox({(Vector3){ -16.0f, 0.0f, 0.0f }, (Vector3){-15.0f, 2.5f, 32.0f}})});
-    m_worldMap.objects.push_back({LIME, BoundingBox({(Vector3){ 16.0f, 0.0f, 0.0f }, (Vector3){17.0f, 2.5f, 32.0f}})});
-    m_worldMap.objects.push_back({GOLD, BoundingBox({(Vector3){ 0.0f, 0.0f, 16.0f }, (Vector3){32.0f, 2.5f, 17.0f}})});
+    m_worldMap.objects.push_back({util::ILIGHTGRAY, util::BoundingBox({(Vector3){0.0f, -0.5f, 0.0f}, (Vector3){32.0f, -0.1f, 32.0f}})});
+    m_worldMap.objects.push_back({util::IBLUE,      util::BoundingBox({(Vector3){ -16.0f, 0.0f, 0.0f }, (Vector3){-15.0f, 2.5f, 32.0f}})});
+    m_worldMap.objects.push_back({util::ILIME,      util::BoundingBox({(Vector3){ 16.0f, 0.0f, 0.0f }, (Vector3){17.0f, 2.5f, 32.0f}})});
+    m_worldMap.objects.push_back({util::IGOLD,      util::BoundingBox({(Vector3){ 0.0f, 0.0f, 16.0f }, (Vector3){32.0f, 2.5f, 17.0f}})});
 
     for (int i = 0; i < MAX_COLUMNS; i++)
     {
-        m_worldMap.objects.push_back({colors[i], BoundingBox({positions[i], positions[i] + (Vector3){2.0f, heights[i], 2.0f}})});
+        m_worldMap.objects.push_back({colors[i], util::BoundingBox({positions[i], positions[i] + (Vector3){2.0f, heights[i], 2.0f}})});
     }
 
     auto ptr = std::make_unique<Entity>(); // GetEntity
@@ -152,3 +182,5 @@ uint32_t World::NewID() {
     static uint32_t current_id = 100;
     return current_id++;
 }
+
+SyncState g_syncState;

@@ -7,7 +7,7 @@ WorldCamera::WorldCamera() {
     m_camera.target = (Vector3){ 0.0f, 2.0f, 0.0f };      // Camera looking at point
     m_camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     m_camera.fovy = 60.0f;                                // Camera field-of-view Y
-    m_camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
+    // m_camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 }
 
 bool WorldCamera::Connect(World* world, uint32_t entity_id) {

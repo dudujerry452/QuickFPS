@@ -1,8 +1,7 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-#include "raylib.h"
-#include "raymath.h"
+#include "../Util/Util.h"
 #include <inttypes.h>
 
 class Entity {
@@ -31,15 +30,15 @@ class Entity {
         Vector3 GetPos() const {return m_pos;}
         Vector3 GetVelocity() const {return m_velocity; }
         Vector3 GetForward() const {return m_forward;} 
-        BoundingBox GetBoundingBox() const {return m_boundingBox; }
-        BoundingBox GetGlobalBoundingBox() const {
+        util::BoundingBox GetBoundingBox() const {return m_boundingBox; }
+        util::BoundingBox GetGlobalBoundingBox() const {
             auto v1 = m_boundingBox.min + m_pos - m_posPoint; 
             auto v2 = m_boundingBox.max + m_pos - m_posPoint;
             return {v1, v2};
         }
         void SetPos(Vector3 pos) {m_pos = pos;}
         void SetForward(Vector3 forward) {m_forward = Vector3Normalize(forward);}
-        void SetBoundingBox(const BoundingBox& obj_box) {m_boundingBox = obj_box; }
+        void SetBoundingBox(const util::BoundingBox& obj_box) {m_boundingBox = obj_box; }
         void SetVelocity(Vector3 velo) {m_velocity = velo; } 
         void SetPosPoint(Vector3 point) {m_posPoint = point; }
         
@@ -63,7 +62,7 @@ class Entity {
         Vector3 m_velocity;
 
         // Collission ralated
-        BoundingBox m_boundingBox;
+        util::BoundingBox m_boundingBox;
         Vector3 m_posPoint; // where the pos mean in model coor
 };
 

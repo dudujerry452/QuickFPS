@@ -1,16 +1,10 @@
 #ifndef _INPUT_H_
 #define _INPUT_H_
 #include "raylib.h"
+#include "../Util/Util.h"
 #include <inttypes.h>
 #include <mutex>
 
-struct InputState {
-    Vector2 moveOnPlane;
-    Vector2 mouseDelta;
-    bool isShooting = false;
-    bool isJumping = false;
-    uint32_t sequence_number = 0;
-};
 
 class InputManager {
     public: 
@@ -20,8 +14,8 @@ class InputManager {
     }
 
     void CheckInput();
-    InputState Peek(); 
-    InputState Pop();
+    util::InputState Peek(); 
+    util::InputState Pop();
 
     private: 
     InputManager():m_squenceNumber(1), p_backBuffer(&m_BufferA), 
@@ -31,8 +25,8 @@ class InputManager {
                         memset(m_mouse, 0, sizeof(m_mouse));
                     };
 
-    InputState m_BufferA, m_BufferB;
-    InputState *p_backBuffer, *p_frontBuffer;
+    util::InputState m_BufferA, m_BufferB;
+    util::InputState *p_backBuffer, *p_frontBuffer;
 
     // counter 
     uint32_t m_squenceNumber;

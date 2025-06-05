@@ -1,8 +1,9 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
+#include "raylib.h"
 #include "../Game/World.h"
-#include "../Sync/Sync.h"
+#include "../Util/Util.h"
 
 class Renderer {
 

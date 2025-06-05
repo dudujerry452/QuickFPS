@@ -1,13 +1,13 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 
-#include "raylib.h"
 #include <vector>
 #include <string>
+#include "../Util/Util.h"
 
 struct MapObject {
-    Color color;
-    BoundingBox colisionBoxes;
+    util::Color color;
+    util::BoundingBox colisionBoxes;
 };
 
 struct Map {

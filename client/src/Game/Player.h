@@ -1,18 +1,10 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
-#include "raylib.h"
-#include "Input.h"
+#include "../Util/Util.h"
 #include "Entity.h"
 
 #include <queue>
 
-struct PlayerState {
-    Vector3 position; 
-    Vector3 forward; 
-    Vector3 velocity; 
-    uint32_t health; 
-    uint32_t weapon;
-};
 
 class Player: virtual public Entity {
 
@@ -21,9 +13,13 @@ class Player: virtual public Entity {
     Player();
     virtual ~Player() {};
 
-    PlayerState GetState() const; 
-    void PushNewInput(const InputState& new_input);
-    void ApplyAuthInput(const PlayerState& auth_state);
+    // Physics related
+    virtual void PhysicsUpdate() override;
+
+    // Input related
+    util::PlayerState GetState() const; 
+    virtual void PushNewInput(const util::InputState& new_input);
+    void ApplyAuthInput(const util::PlayerState& auth_state);
 
     // Game related
     void SetHealth(uint32_t health) { m_health = health; }
@@ -48,12 +44,13 @@ class LocalPlayer: virtual public Player{
     LocalPlayer();
     virtual ~LocalPlayer() {}
 
-    void PhysicsUpdate() override;
+    // void PhysicsUpdate() override;
+    void PushNewInput(const util::InputState& new_input) override;
 
     
 
     private: 
-    std::deque<InputState> m_inputQueue; 
+    std::deque<util::InputState> m_inputQueue; 
     private: 
 
 };

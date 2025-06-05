@@ -6,6 +6,8 @@
 
 #include "Renderer/Renderer.h"
 
+#include "Input/Input.h"
+
 #include "spdlog/spdlog.h"
 #include <iostream>
 
@@ -64,6 +66,10 @@ int main(void)
     std::thread physical_thread([&] {
         spdlog::info("Physical Thread Start");
         while(g_isRunning.load(std::memory_order_relaxed)) {
+            auto input = IM.Pop();
+            auto localPlayer = world.GetEntity(world.GetLocalPlayer()).get();
+            auto player = dynamic_cast<LocalPlayer*>(localPlayer);
+            player->PushNewInput(input);
             world.WorldUpdateFixed();
         }
     });

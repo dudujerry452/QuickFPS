@@ -14,25 +14,32 @@ endif()
 
 add_subdirectory(lib/spdlog)
 
-
 file(GLOB GAME_SOURCES "src/Game/*.cpp")
-file(GLOB GAME_INCLUDE "src/Game/*.h")
+file(GLOB UTIL_SOURCES "src/Util/*.cpp")
+file(GLOB INPUT_SOURCES "src/Input/*.cpp")
 file(GLOB RENDERER_SOURCES "src/Renderer/*.cpp")
-file(GLOB RENDERER_INCLUDE "src/Renderer/*.h")
-file(GLOB SYNC_SOURCES "src/Sync/*.cpp")
-file(GLOB SYNC_INCLUDE "src/Sync/*.h")
-add_executable(Main 
-                    ${GAME_SOURCES}
+
+add_library(GameLogic STATIC 
+    ${UTIL_SOURCES}
+    ${GAME_SOURCES}
+)
+target_link_libraries(GameLogic PUBLIC spdlog)
+target_include_directories(GameLogic PUBLIC lib/spdlog/include)
+
+target_include_directories(GameLogic PUBLIC src/Util)
+
+add_executable(QuickFPS 
+                    ${INPUT_SOURCES}
                     ${RENDERER_SOURCES}
-                    ${SYNC_SOURCES}
                     src/main.cpp
               ) 
 
-target_include_directories(Main PUBLIC ${RAYLIB_DIR}/include)
-target_include_directories(Main PUBLIC lib/spdlog/include)
-target_link_directories(Main PUBLIC ${RAYLIB_DIR}/lib)
-target_link_libraries(Main PUBLIC raylib)
-target_link_libraries(Main PUBLIC spdlog)
+target_include_directories(QuickFPS PUBLIC ${RAYLIB_DIR}/include)
+target_include_directories(QuickFPS PUBLIC lib/spdlog/include)
+target_link_directories(QuickFPS PUBLIC ${RAYLIB_DIR}/lib)
+target_include_directories(QuickFPS PUBLIC src/Util)
+target_link_libraries(QuickFPS PUBLIC raylib)
+target_link_libraries(QuickFPS PUBLIC GameLogic)
 
 
 
@@ -40,18 +47,20 @@ target_link_libraries(Main PUBLIC spdlog)
 
 set(CAPI_SOURCES
     src/CAPI/c_api.cpp 
-    ${GAME_SOURCES}
-    ${RENDERER_SOURCES}
-    ${SYNC_SOURCES}
+    # ${UTIL_SOURCES}
+    # ${GAME_SOURCES}
 )
 
 add_library(wldcapi STATIC ${CAPI_SOURCES})
 
-target_include_directories(wldcapi PUBLIC ${RAYLIB_DIR}/include)
+# target_include_directories(wldcapi PUBLIC ${RAYLIB_DIR}/include)
+target_include_directories(wldcapi PUBLIC src/Util)
 target_include_directories(wldcapi PUBLIC lib/spdlog/include)
-target_link_directories(wldcapi PUBLIC ${RAYLIB_DIR}/lib)
-target_link_libraries(wldcapi PUBLIC raylib)
-target_link_libraries(wldcapi PUBLIC spdlog)
+# target_include_directories(wldcapi PUBLIC lib/spdlog/include)
+# target_link_directories(wldcapi PUBLIC ${RAYLIB_DIR}/lib)
+# target_link_libraries(wldcapi PUBLIC raylib)
+# target_link_libraries(wldcapi PUBLIC spdlog)
+target_link_libraries(wldcapi PUBLIC GameLogic)
 
 message(STATUS "CAPI library created successfully.")
 
@@ -68,15 +77,16 @@ else()
     set(SPDLOG_LIB_NAME "libspdlog.a")
 endif()
 set(SPDLOG_LIB_SOURCE_PATH "${CMAKE_BINARY_DIR}/lib/spdlog/${SPDLOG_LIB_NAME}") # Adjust if spdlog outputs elsewhere
+set(GAMELOGIC_LIB_SOURCE_PATH "$<TARGET_FILE:GameLogic>") # Assuming GameLogic is built as a target
 set(WDLCAPI_LIB_SOURCE_PATH "$<TARGET_FILE:wldcapi>")
-set(RAYLIB_LIB_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${RAYLIB_DIR}/lib/libraylib.a") # RAYLIB_DIR was defined earlier
+# set(RAYLIB_LIB_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${RAYLIB_DIR}/lib/libraylib.a") # RAYLIB_DIR was defined earlier
 set(CAPI_HEADER_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/CAPI/c_api.h") # Assuming this is the correct path
 
 add_custom_command(
     TARGET wldcapi POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SPDLOG_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/${SPDLOG_LIB_NAME}"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${WDLCAPI_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/libwldcapi.a"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${RAYLIB_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/libraylib.a"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${GAMELOGIC_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/libGameLogic.a"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CAPI_HEADER_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/c_api.h"
     COMMENT "Copying CGO dependencies to ${GO_CGO_PACKAGE_DIR}"
     VERBATIM # Important for proper command quoting and execution
