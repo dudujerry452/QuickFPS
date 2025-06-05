@@ -17,7 +17,7 @@ class Entity {
     public: 
         Entity(); 
         virtual ~Entity() {};
-
+        Entity& operator=(const Entity& other);
 
         // Data related
         uint32_t GetID() const {return m_id;} 
@@ -26,7 +26,6 @@ class Entity {
         bool IsError() {return m_isError;}
         EntityType GetType() const {return m_entityType;}
 
-        Entity& operator=(const Entity& other);
 
         // Physics related
         Vector3 GetPos() const {return m_pos;}
@@ -44,6 +43,7 @@ class Entity {
         void SetVelocity(Vector3 velo) {m_velocity = velo; } 
         void SetPosPoint(Vector3 point) {m_posPoint = point; }
         
+
         // Update related 
         virtual void PhysicsUpdate() {}; 
         virtual void AnimeUpdate() {}; 

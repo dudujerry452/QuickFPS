@@ -22,11 +22,17 @@ class Player: virtual public Entity {
     virtual ~Player() {};
 
     PlayerState GetState() const; 
+    void PushNewInput(const InputState& new_input);
+    void ApplyAuthInput(const PlayerState& auth_state);
+
+    // Game related
+    void SetHealth(uint32_t health) { m_health = health; }
+    uint32_t GetHealth() const { return m_health; }
+    void SetWeapon(uint32_t weapon) { m_weapon = weapon; }
+    uint32_t GetWeapon() const { return m_weapon; }
 
     protected:
     // ------ deal with input --------
-    void PushNewInput(const InputState& new_input);
-    void ApplyAuthInput(const PlayerState& auth_state);
 
     protected: 
     uint32_t m_health; 
@@ -51,7 +57,6 @@ class LocalPlayer: virtual public Player{
     private: 
 
 };
-
 
 
 #endif

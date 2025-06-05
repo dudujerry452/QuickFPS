@@ -1,18 +1,3 @@
-/*******************************************************************************************
-*
-*   raylib [core] example - 3d camera first person
-*
-*   Example complexity rating: [★★☆☆] 2/4
-*
-*   Example originally created with raylib 1.3, last time updated with raylib 1.3
-*
-*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2015-2025 Ramon Santamaria (@raysan5)
-*
-********************************************************************************************/
-
 #include "raylib.h"
 #include "rcamera.h"
 #include "Game/Entity.h"
@@ -68,7 +53,7 @@ int main(void)
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
     auto ob = world.AddEntity(std::move(std::make_unique<Entity>(obs)));
     world.SetLocalPlayer(plid);
-    world.Attach();
+    world.Attach(ob);
 
     Renderer renderer;
     g_isRunning = true;

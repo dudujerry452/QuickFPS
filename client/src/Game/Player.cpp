@@ -1,8 +1,12 @@
+
 #include "Player.h"
 #include "raymath.h"
 #include "rcamera.h"
 
 #include "spdlog/spdlog.h"
+
+
+
 
 Player::Player() {
     m_entityType = EntityType::Player;   
@@ -77,5 +81,5 @@ void LocalPlayer::PhysicsUpdate() {
     }
     m_velocity.x = v2d.x, m_velocity.z = v2d.y;
 
-    m_velocity.y -= 0.01f; // gravity
+    m_velocity.y -= 0.005f; // gravity
 } 
