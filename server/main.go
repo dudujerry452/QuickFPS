@@ -2,12 +2,46 @@ package main
 
 import (
 	"fmt"
-	"qfserver/wldlib" // 替换为你的模块名/wldlib
-	"runtime"
+	"net"
+	// "qfserver/wldlib"
 )
 
 func main() {
-	runtime.LockOSThread() // Raylib/OpenGL 通常需要这个
+
+	// use net to listen from incoming udp packets, on port 1077
+	fmt.Println("Starting server...")
+	server, err := net.ListenUDP("udp", &net.UDPAddr{
+		Port: 1077,
+		IP:   net.ParseIP("127.0.0.1"),
+	})
+	if err != nil {
+		fmt.Printf("Error starting server: %v\n", err)
+		return
+	}
+	defer server.Close()
+	fmt.Println("Server started on port 1077.")
+	for {
+		buffer := make([]byte, 1024)
+		n, addr, err := server.ReadFromUDP(buffer)
+		if err != nil {
+			fmt.Printf("Error reading from UDP: %v\n", err)
+			continue
+		}
+		fmt.Printf("Received %d bytes from %s: %s\n", n, addr, string(buffer[:n]))
+
+		// Echo the message back to the client
+		_, err = server.WriteToUDP(buffer[:n], addr)
+		if err != nil {
+			fmt.Printf("Error writing to UDP: %v\n", err)
+			continue
+		}
+		fmt.Printf("Echoed back %d bytes to %s\n", n, addr)
+	}
+
+}
+
+/*
+func main() {
 
 	fmt.Println("Creating world...")
 	world := wldlib.NewWorld()
@@ -41,3 +75,4 @@ func main() {
 
 	fmt.Println("Test finished.")
 }
+*/

@@ -5,14 +5,19 @@
 #include "Game/World.h"
 
 #include "Renderer/Renderer.h"
-
 #include "Input/Input.h"
+
+#include "Network/Network.h"
 
 #include "spdlog/spdlog.h"
 #include <iostream>
 
 #define MAX_COLUMNS 20
 
+LocalPlayer player;
+World world;
+Renderer renderer;
+Network network;
 std::atomic<bool> g_isRunning{false}; 
 
 //------------------------------------------------------------------------------------
@@ -23,7 +28,7 @@ int main(void)
 
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
     spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
-    spdlog::debug("spdlog has been on. ");    
+    spdlog::debug("spdlog has been on. ");   
     
     // Initialization
     //--------------------------------------------------------------------------------------
@@ -35,33 +40,22 @@ int main(void)
     SetTargetFPS(60);                   
     //--------------------------------------------------------------------------------------
 
-    BoundingBox bb{Vector3{2,2,2}, Vector3{2.2,2.2,2.2}};
-    BoundingBox bb2{Vector3{2.3, 2.3, 2.3}, Vector3{4,4,4}};
-    if(CheckCollisionBoxes(bb, bb2)) {
-        spdlog::debug("col");
-    }
-
-    LocalPlayer player;
     player.SetPos({0,1.5,4});
     player.SetForward({0,1,0});
 
     Entity obs;
     obs.SetPos({-7, 12, 5});
     obs.SetForward({1, -1, 0});
-    // obs.SetPos({-10, -2, 0});
-    // obs.SetForward({1, 0, 0});
 
-    World world;
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
     auto ob = world.AddEntity(std::move(std::make_unique<Entity>(obs)));
     world.SetLocalPlayer(plid);
     world.Attach(ob);
 
-    Renderer renderer;
     g_isRunning = true;
 
-    std::mutex mtx;
-    std::condition_variable cv;
+    network.start("127.0.0.1", 1077);
+    network.send("Hello from client!");
 
     std::thread physical_thread([&] {
         spdlog::info("Physical Thread Start");
@@ -79,8 +73,13 @@ int main(void)
         renderer.Prepare(world.GetRenderState());
         renderer.Render();
     }
+
     g_isRunning.store(false, std::memory_order_relaxed);
-    physical_thread.join();
+
+    network.stop();
+    if(physical_thread.joinable())
+        physical_thread.join();
+    
 
     CloseWindow();        
 

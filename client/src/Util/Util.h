@@ -10,6 +10,8 @@ namespace util {
 
 
 struct InputState {
+    uint32_t player_id; 
+    uint32_t tick;
     Vector2 moveOnPlane;
     Vector2 mouseDelta;
     bool isShooting = false;

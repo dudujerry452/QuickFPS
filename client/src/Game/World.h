@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <inttypes.h>
 
+#include "concurrentqueue.h"
+
 #include "spdlog/spdlog.h"
 
 
@@ -42,10 +44,6 @@ class World {
     }
     uint32_t GetLocalPlayer() const { return m_localPlayer; }
 
-    // uint32_t AddPlayer(std::unique_ptr<Player>&& player_ptr, bool is_local = false);
-    // auto GetPlayers() {return m_players;}
-    // auto GetLocalPlayer() {return m_localPlayer;}
-
     // update related
     void WorldUpdate();
     void WorldUpdateFixed();
@@ -63,6 +61,9 @@ class World {
     // render data transmit
     RenderStateBuffer GetRenderState();
 
+    // interactive with outside
+    void PushInput(const util::InputState& input); 
+
     friend class Physics;
 
     private: 
@@ -73,6 +74,9 @@ class World {
     std::unordered_map<uint32_t, std::unique_ptr<Entity> > m_entities;
     uint32_t m_localPlayer;
     WorldCamera m_camera;
+
+    // Interactive-----------------
+    moodycamel::ConcurrentQueue<util::InputState> m_inputQueue;
 
     private: 
 

@@ -178,6 +178,10 @@ RenderStateBuffer World::GetRenderState() {
     return render_buffer;
 }
 
+void World::PushInput(const util::InputState& input) {
+    m_inputQueue.enqueue(input);
+}
+
 uint32_t World::NewID() {
     static uint32_t current_id = 100;
     return current_id++;

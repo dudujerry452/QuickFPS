@@ -14,6 +14,13 @@ endif()
 
 add_subdirectory(lib/spdlog)
 
+# -------------Public Includes --------------------
+include_directories(lib/spdlog/include)
+include_directories(lib/concurrentqueue/include)
+
+
+# -------------Game Logic --------------------
+
 file(GLOB GAME_SOURCES "src/Game/*.cpp")
 file(GLOB UTIL_SOURCES "src/Util/*.cpp")
 file(GLOB INPUT_SOURCES "src/Input/*.cpp")
@@ -24,9 +31,25 @@ add_library(GameLogic STATIC
     ${GAME_SOURCES}
 )
 target_link_libraries(GameLogic PUBLIC spdlog)
-target_include_directories(GameLogic PUBLIC lib/spdlog/include)
-
 target_include_directories(GameLogic PUBLIC src/Util)
+
+# -------------Network --------------------
+file(GLOB NETWORK_SOURCES "src/Network/*.cpp")
+add_library(Network STATIC 
+    ${NETWORK_SOURCES}
+)
+target_include_directories(Network PUBLIC lib/asio/include)
+target_link_libraries(Network PUBLIC spdlog)
+target_link_libraries(Network PUBLIC GameLogic)
+
+target_compile_definitions(
+    Network PUBLIC 
+    ASIO_STANDALONE
+    ASIO_HEADER_ONLY
+)
+
+# -------------QuickFPS --------------------
+# Include : INPUT / RENDERER /Network / Game Logic
 
 add_executable(QuickFPS 
                     ${INPUT_SOURCES}
@@ -35,34 +58,26 @@ add_executable(QuickFPS
               ) 
 
 target_include_directories(QuickFPS PUBLIC ${RAYLIB_DIR}/include)
-target_include_directories(QuickFPS PUBLIC lib/spdlog/include)
 target_link_directories(QuickFPS PUBLIC ${RAYLIB_DIR}/lib)
-target_include_directories(QuickFPS PUBLIC src/Util)
 target_link_libraries(QuickFPS PUBLIC raylib)
-target_link_libraries(QuickFPS PUBLIC GameLogic)
+# target_link_libraries(QuickFPS PUBLIC GameLogic) // Game Logic is already linked via Network
+target_link_libraries(QuickFPS PUBLIC Network)
 
 
-
-# Link for libwldcapi.a
+#  ---------------libwldcapi --------------------
 
 set(CAPI_SOURCES
     src/CAPI/c_api.cpp 
-    # ${UTIL_SOURCES}
-    # ${GAME_SOURCES}
 )
 
 add_library(wldcapi STATIC ${CAPI_SOURCES})
 
-# target_include_directories(wldcapi PUBLIC ${RAYLIB_DIR}/include)
-target_include_directories(wldcapi PUBLIC src/Util)
-target_include_directories(wldcapi PUBLIC lib/spdlog/include)
-# target_include_directories(wldcapi PUBLIC lib/spdlog/include)
-# target_link_directories(wldcapi PUBLIC ${RAYLIB_DIR}/lib)
-# target_link_libraries(wldcapi PUBLIC raylib)
-# target_link_libraries(wldcapi PUBLIC spdlog)
 target_link_libraries(wldcapi PUBLIC GameLogic)
 
 message(STATUS "CAPI library created successfully.")
+
+
+
 
 # ==============================================================================
 # === Post-build command to copy files for Go CGO package ===
