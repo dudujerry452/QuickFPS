@@ -54,7 +54,7 @@ void Player::PushNewInput(const util::InputState& new_input) {
     Camera3D tmp = { 0 };
     tmp.position = GetPos();    
     tmp.target = GetPos() + GetForward();      // tmp looking at point
-    tmp.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // tmp up vector (rotation towards target)
+    tmp.up = { 0.0f, 1.0f, 0.0f };          // tmp up vector (rotation towards target)
 
     CameraYaw(&tmp, -new_input.mouseDelta.x*0.005f, false);
     CameraPitch(&tmp, -new_input.mouseDelta.y*0.005f, true, false, true);

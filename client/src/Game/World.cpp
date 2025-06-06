@@ -45,18 +45,18 @@ World::World(): m_localPlayer(0) {
     for (int i = 0; i < MAX_COLUMNS; i++)
     {
         heights[i] = (float)util::IGetRandomValue(1, 12);
-        positions[i] = (Vector3){ 2.f, 0.0f , 2.f };
-        colors[i] = (util::Color){ (unsigned char)util::IGetRandomValue(20, 255), (unsigned char)util::IGetRandomValue(10, 55), 30, 255 };
+        positions[i] = { 2.f, 0.0f , 2.f };
+        colors[i] = { (unsigned char)util::IGetRandomValue(20, 255), (unsigned char)util::IGetRandomValue(10, 55), 30, 255 };
     }
 
-    m_worldMap.objects.push_back({util::ILIGHTGRAY, util::BoundingBox({(Vector3){0.0f, -0.5f, 0.0f}, (Vector3){32.0f, -0.1f, 32.0f}})});
-    m_worldMap.objects.push_back({util::IBLUE,      util::BoundingBox({(Vector3){ -16.0f, 0.0f, 0.0f }, (Vector3){-15.0f, 2.5f, 32.0f}})});
-    m_worldMap.objects.push_back({util::ILIME,      util::BoundingBox({(Vector3){ 16.0f, 0.0f, 0.0f }, (Vector3){17.0f, 2.5f, 32.0f}})});
-    m_worldMap.objects.push_back({util::IGOLD,      util::BoundingBox({(Vector3){ 0.0f, 0.0f, 16.0f }, (Vector3){32.0f, 2.5f, 17.0f}})});
+    m_worldMap.objects.push_back({util::ILIGHTGRAY, util::BoundingBox({{0.0f, -0.5f, 0.0f}, {32.0f, -0.1f, 32.0f}})});
+    m_worldMap.objects.push_back({util::IBLUE,      util::BoundingBox({{ -16.0f, 0.0f, 0.0f }, {-15.0f, 2.5f, 32.0f}})});
+    m_worldMap.objects.push_back({util::ILIME,      util::BoundingBox({{ 16.0f, 0.0f, 0.0f }, {17.0f, 2.5f, 32.0f}})});
+    m_worldMap.objects.push_back({util::IGOLD,      util::BoundingBox({{ 0.0f, 0.0f, 16.0f }, {32.0f, 2.5f, 17.0f}})});
 
     for (int i = 0; i < MAX_COLUMNS; i++)
     {
-        m_worldMap.objects.push_back({colors[i], util::BoundingBox({positions[i], positions[i] + (Vector3){2.0f, heights[i], 2.0f}})});
+        m_worldMap.objects.push_back({colors[i], util::BoundingBox({positions[i], positions[i] + Vector3({2.0f, heights[i], 2.0f})})});
     }
 
     auto ptr = std::make_unique<Entity>(); // GetEntity

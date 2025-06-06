@@ -3,9 +3,9 @@
 
 WorldCamera::WorldCamera() {
     m_camera = { 0 };
-    m_camera.position = (Vector3){ 0.0f, 2.0f, 4.0f };    // Camera position
-    m_camera.target = (Vector3){ 0.0f, 2.0f, 0.0f };      // Camera looking at point
-    m_camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+    m_camera.position = { 0.0f, 2.0f, 4.0f };    // Camera position
+    m_camera.target = { 0.0f, 2.0f, 0.0f };      // Camera looking at point
+    m_camera.up = { 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     m_camera.fovy = 60.0f;                                // Camera field-of-view Y
     // m_camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 }

@@ -33,7 +33,7 @@ void Renderer::Render() {
 
             for(auto& obj : m_frontBuffer->objects) {
                 RenderAABB(obj.colisionBoxes, 
-                    (Color){obj.color.r, obj.color.g, obj.color.b, obj.color.a});
+                    {obj.color.r, obj.color.g, obj.color.b, obj.color.a});
             }
             for(auto& ent : m_frontBuffer->entities) {
                 if(ent.IsError()) continue;

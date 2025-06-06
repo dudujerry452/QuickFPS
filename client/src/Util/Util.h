@@ -2,6 +2,7 @@
 #define _UTIL_H_
 #include "raymath.h"
 #include <stdexcept>
+#include <inttypes.h>
 
 namespace util {
 

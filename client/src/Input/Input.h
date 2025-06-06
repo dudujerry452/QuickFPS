@@ -4,6 +4,7 @@
 #include "../Util/Util.h"
 #include <inttypes.h>
 #include <mutex>
+#include <cstring>
 
 
 class InputManager {

@@ -7,7 +7,7 @@
 #include "Renderer/Renderer.h"
 #include "Input/Input.h"
 
-#include "Network/Network.h"
+#include "Network/networkapi.h"
 
 #include "spdlog/spdlog.h"
 #include <iostream>
@@ -17,7 +17,7 @@
 LocalPlayer player;
 World world;
 Renderer renderer;
-Network network;
+NetworkHandle network = NcreateNetworkHandle(); // Network handle for client-side network operations
 std::atomic<bool> g_isRunning{false}; 
 
 //------------------------------------------------------------------------------------
@@ -25,6 +25,8 @@ std::atomic<bool> g_isRunning{false};
 //------------------------------------------------------------------------------------
 int main(void)
 {
+
+    // start(0, 0, 0);
 
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
     spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
@@ -54,8 +56,8 @@ int main(void)
 
     g_isRunning = true;
 
-    network.start("127.0.0.1", 1077);
-    network.send("Hello from client!");
+    // network.start("127.0.0.1", 1077);
+    // network.send("Hello from client!");
 
     std::thread physical_thread([&] {
         spdlog::info("Physical Thread Start");
@@ -76,7 +78,7 @@ int main(void)
 
     g_isRunning.store(false, std::memory_order_relaxed);
 
-    network.stop();
+    // network.stop();
     if(physical_thread.joinable())
         physical_thread.join();
     
