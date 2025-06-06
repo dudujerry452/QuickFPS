@@ -4,6 +4,14 @@
 #include "../Util/Util.h"
 #include <inttypes.h>
 
+
+
+/**
+ * Entity class
+ * export as unique_ptr 
+ * export as Clone
+ * export as EntityState 
+ */
 class Entity {
 
     public: 
@@ -16,7 +24,11 @@ class Entity {
     public: 
         Entity(); 
         virtual ~Entity() {};
-        Entity& operator=(const Entity& other);
+        Entity& operator=(Entity& other);
+
+        virtual Entity* Clone() const {
+            return new Entity(*this);
+        }
 
         // Data related
         uint32_t GetID() const {return m_id;} 
@@ -24,6 +36,21 @@ class Entity {
         void SetError(bool value) { m_isError = value; }
         bool IsError() {return m_isError;}
         EntityType GetType() const {return m_entityType;}
+
+        virtual util::EntityState GetState() const {
+            return util::EntityState{
+                m_id, 
+                static_cast<unsigned char>(m_isError),
+                m_pos, 
+                m_forward, 
+                m_velocity, 
+                m_boundingBox, 
+                m_posPoint,
+                0, 
+                0, // health
+                0  // weapon
+            };
+        }
 
 
         // Physics related

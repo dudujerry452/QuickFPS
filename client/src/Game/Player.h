@@ -13,13 +13,25 @@ class Player: virtual public Entity {
     Player();
     virtual ~Player() {};
 
+    Player& operator=(Player& other) {
+        if (this == &other) return *this; // self-assignment check
+        Entity::operator=(other);
+        m_health = other.m_health;
+        m_weapon = other.m_weapon;
+        return *this;
+    }
+
+    Player* Clone() const override {
+        return new Player(*this);
+    }
+
     // Physics related
-    virtual void PhysicsUpdate() override;
+    void PhysicsUpdate() override;
 
     // Input related
-    util::PlayerState GetState() const; 
+    util::EntityState GetState() const override; 
     virtual void PushNewInput(const util::InputState& new_input);
-    void ApplyAuthInput(const util::PlayerState& auth_state);
+    // void ApplyAuthInput(const util::PlayerState& auth_state);
 
     // Game related
     void SetHealth(uint32_t health) { m_health = health; }
@@ -42,7 +54,18 @@ class LocalPlayer: virtual public Player{
     public: 
 
     LocalPlayer();
-    virtual ~LocalPlayer() {}
+    ~LocalPlayer() override {}
+
+    LocalPlayer* Clone() const override {
+        return new LocalPlayer(*this);
+    }
+
+    LocalPlayer& operator=(LocalPlayer& other) {
+        if (this == &other) return *this; // self-assignment check
+        Player::operator=(other); 
+        // not copy input queue
+        return *this;
+    }
 
     // void PhysicsUpdate() override;
     void PushNewInput(const util::InputState& new_input) override;

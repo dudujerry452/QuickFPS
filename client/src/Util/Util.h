@@ -6,35 +6,57 @@
 
 namespace util {
 
-
-// custom 
-
-
-struct InputState {
-    uint32_t player_id; 
-    uint32_t tick;
-    Vector2 moveOnPlane;
-    Vector2 mouseDelta;
-    bool isShooting = false;
-    bool isJumping = false;
-    uint32_t sequence_number = 0;
-};
-struct PlayerState {
-    Vector3 position; 
-    Vector3 forward; 
-    Vector3 velocity; 
-    uint32_t health; 
-    uint32_t weapon;
-};
-
-
-
 // for raylib
 
 typedef struct BoundingBox {
     Vector3 min;            // Minimum vertex box-corner
     Vector3 max;            // Maximum vertex box-corner
 } BoundingBox;
+
+// custom 
+
+
+struct InputState {
+    uint32_t player_id; 
+    Vector2 moveOnPlane;
+    Vector2 mouseDelta;
+    bool isShooting = false;
+    bool isJumping = false;
+    uint32_t sequence_number = 0;
+};
+
+/* 
+        // meta data 
+        EntityType m_entityType;
+        uint32_t m_id;
+        bool m_isError;
+
+        // physical variable
+        Vector3 m_pos;
+        Vector3 m_forward;
+        Vector3 m_velocity;
+
+        // Collission ralated
+        util::BoundingBox m_boundingBox;
+        Vector3 m_posPoint; // where the pos mean in model coor
+*/
+struct EntityState{
+    uint32_t id; 
+    unsigned char is_error;
+    Vector3 position; 
+    Vector3 forward; 
+    Vector3 velocity; 
+    BoundingBox bounding_box; 
+    Vector3 pos_point; 
+    unsigned char is_player; 
+    uint32_t health; 
+    uint32_t weapon;
+};
+
+// struct EntityS
+
+
+
 
 
 

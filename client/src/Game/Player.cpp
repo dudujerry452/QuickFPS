@@ -11,8 +11,8 @@
 Player::Player() {
     m_entityType = EntityType::Player;   
     m_boundingBox = util::BoundingBox{
-        Vector3{0,0,0}, 
-        Vector3{1,2,1}
+        {0,0,0}, 
+        {1,2,1}
     };
     m_posPoint = {0.5f, 1.5f, 0.5f};
 }
@@ -31,13 +31,18 @@ void Player::PhysicsUpdate() {
     m_velocity.y -= 0.005f; // gravity
 } 
 
-util::PlayerState Player::GetState() const {
-    return util::PlayerState{
-        m_pos,
+util::EntityState Player::GetState() const {
+    return util::EntityState{
+        m_id, 
+        static_cast<unsigned char>(m_isError),
+        m_pos, 
         m_forward, 
         m_velocity, 
-        m_health, 
-        m_weapon
+        m_boundingBox, 
+        m_posPoint,
+        1, 
+        5, // health
+        5  // weapon
     };
 }
 

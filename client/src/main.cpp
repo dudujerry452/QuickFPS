@@ -52,7 +52,7 @@ int main(void)
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
     auto ob = world.AddEntity(std::move(std::make_unique<Entity>(obs)));
     world.SetLocalPlayer(plid);
-    world.Attach(ob);
+    world.Attach();
 
     g_isRunning = true;
 
@@ -63,9 +63,10 @@ int main(void)
         spdlog::info("Physical Thread Start");
         while(g_isRunning.load(std::memory_order_relaxed)) {
             auto input = IM.Pop();
-            auto localPlayer = world.GetEntity(world.GetLocalPlayer()).get();
-            auto player = dynamic_cast<LocalPlayer*>(localPlayer);
-            player->PushNewInput(input);
+            input.player_id = world.GetLocalPlayer();
+            if(input.sequence_number) {
+                world.PushInput(input);
+            } 
             world.WorldUpdateFixed();
         }
     });

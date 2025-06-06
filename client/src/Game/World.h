@@ -64,6 +64,12 @@ class World {
     // interactive with outside
     void PushInput(const util::InputState& input); 
 
+    void PrepareState(std::unique_ptr<Entity>& ent); // id = 0: delete this ent 
+    void SwapState(uint32_t seq_num);  // thread safe. but need to ensure state is compeletely copied. 
+
+    void ProvideUpdater();  // thread safe
+    std::vector<util::EntityState> GetUpdater();
+
     friend class Physics;
 
     private: 
@@ -78,6 +84,16 @@ class World {
     // Interactive-----------------
     moodycamel::ConcurrentQueue<util::InputState> m_inputQueue;
 
+    std::mutex m_stateMutex;
+    bool i_isStateConsumed;
+    int m_updateSequenceNumber; 
+    std::vector<std::unique_ptr<Entity> > m_EntitiesBufferA, m_EntitiesBufferB;
+    std::vector<std::unique_ptr<Entity> > *m_EntitiesBufferFront, *m_EntitiesBufferBack;
+
+
+    std::mutex m_updaterMutex;
+    std::vector<std::unique_ptr<Entity> > m_UpdaterBufferA, m_UpdaterBufferB;
+    std::vector<std::unique_ptr<Entity> > *m_UpdaterBufferFront, *m_UpdaterBufferBack;
     private: 
 
     // meta 
