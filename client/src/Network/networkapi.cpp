@@ -30,3 +30,7 @@ void Nstop(NetworkHandle handle) {
         static_cast<Network*>(handle)->stop();
     }
 }
+
+int xxtest() {
+    return xxxtest();
+}

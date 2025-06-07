@@ -16,15 +16,6 @@ typedef struct BoundingBox {
 // custom 
 
 
-// struct InputState {
-//     uint32_t player_id; 
-//     Vector2 moveOnPlane;
-//     Vector2 mouseDelta;
-//     bool isShooting = false;
-//     bool isJumping = false;
-//     uint32_t sequence_number = 0;
-// };
-
 struct InputState {
     uint32_t player_id; 
     unsigned char wasd_pressed[4]; // 0: no op; 1: press; 2: release 
@@ -33,21 +24,6 @@ struct InputState {
     uint32_t sequence_number = 0; // sequence number for input events
 }; 
 
-/* 
-        // meta data 
-        EntityType m_entityType;
-        uint32_t m_id;
-        bool m_isError;
-
-        // physical variable
-        Vector3 m_pos;
-        Vector3 m_forward;
-        Vector3 m_velocity;
-
-        // Collission ralated
-        util::BoundingBox m_boundingBox;
-        Vector3 m_posPoint; // where the pos mean in model coor
-*/
 struct EntityState{
     uint32_t id; 
     unsigned char is_error;
@@ -61,15 +37,6 @@ struct EntityState{
     uint32_t health; 
     uint32_t weapon;
 };
-
-// struct EntityS
-
-
-
-
-
-
-
 
 
 

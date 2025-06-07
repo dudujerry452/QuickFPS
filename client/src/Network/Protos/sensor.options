@@ -1,0 +1,2 @@
+SensorReading.sensor_id     max_size: 24  
+SensorBatch.readings        max_count: 5  

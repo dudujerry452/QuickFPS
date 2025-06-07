@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+message SensorReading {
+  string sensor_id = 1;
+
+  uint64 timestamp = 2;
+  
+  float value = 3;
+
+  enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+    WARNING = 2;
+    ERROR = 3;
+  }
+  Status status = 4;
+}
+
+message SensorBatch {
+  repeated SensorReading readings = 1;
+}

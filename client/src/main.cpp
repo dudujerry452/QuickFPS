@@ -26,6 +26,7 @@ std::atomic<bool> g_isRunning{false};
 int main(void)
 {
 
+    xxtest();
     // start(0, 0, 0);
 
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
@@ -43,7 +44,7 @@ int main(void)
     //--------------------------------------------------------------------------------------
 
     player.SetPos({0,1.5,4});
-    player.SetForward({0,1,0});
+    player.SetForward({1,0,0});
 
     Entity obs;
     obs.SetPos({-7, 12, 5});
@@ -56,8 +57,8 @@ int main(void)
 
     g_isRunning = true;
 
-    // network.start("127.0.0.1", 1077);
-    // network.send("Hello from client!");
+    Nstart(network, (char*)"127.0.0.1", 1077);
+    Nsend(network, (char*)"Hello from client!");
 
     uint32_t localplaer = world.GetLocalPlayer();
 
@@ -69,14 +70,15 @@ int main(void)
     });
 
     while(!WindowShouldClose()) {
+        renderer.Prepare(world.GetRenderState());
+        renderer.Render();
+
         IM.CheckInput();
         auto input = IM.Pop();
         input.player_id = localplaer;
         if(input.sequence_number) {
             world.PushInput(input);
         } 
-        renderer.Prepare(world.GetRenderState());
-        renderer.Render();
 
         if(IsKeyPressed(KEY_Q)) {
             auto data = world.GetUpdater();
@@ -95,7 +97,7 @@ int main(void)
 
     g_isRunning.store(false, std::memory_order_relaxed);
 
-    // network.stop();
+    Nstop(network); 
     if(physical_thread.joinable())
         physical_thread.join();
     

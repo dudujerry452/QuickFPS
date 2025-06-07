@@ -1,3 +1,16 @@
+/**
+ * 
+ * World.h 
+ * class World: 
+ * 
+ * Export : vector<EntityState> GetUpdater() 
+ * Import : InputState PushInput() 
+ * EntityState: player id, position, forward, velocity, bounding box, pos point, is player, sequence number, health, weapon
+ * InputState : sequence number , player id 
+ * 
+ */
+
+
 #ifndef _WORLD_H_
 #define _WORLD_H_
 
