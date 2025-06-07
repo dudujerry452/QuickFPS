@@ -1,5 +1,6 @@
 #include "c_api.h"
 #include "../Game/World.h"
+#include "../Serialize/Serialize.h"
 
 WorldHandle CreateWorld() {
     auto world = new World();
@@ -83,6 +84,28 @@ void SetPlayerWeapon(WorldHandle world, uint32_t player_id, uint32_t weapon) {
             p->SetWeapon(weapon);
         }
     }
+}
+
+
+int GetAllEntitiesState(WorldHandle world, uint8_t** out_data, uint32_t* out_size) {
+    auto w = reinterpret_cast<World*>(world);
+    auto ent_list = w->GetUpdater(); 
+    auto bs = serialization::serialize(ent_list); 
+    if(!bs.has_value()) {
+        return 1; // error code 
+    }
+    auto& b = bs.value();
+
+    *out_data = (uint8_t*)malloc(b.size());
+    if(*out_data == nullptr) {
+        *out_size = 0;
+        return 2;
+    }
+
+    memcpy(*out_data, b.data(), b.size());
+    *out_size = b.size();
+    
+    return 0; //SUCCESS
 }
 // void PushPlayerInput(WorldHandle world, uint32_t player_id, 
 //                       float move_x, float move_y, 

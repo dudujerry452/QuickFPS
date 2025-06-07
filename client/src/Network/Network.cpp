@@ -104,6 +104,7 @@ void Network::start(const std::string& serverAddress, uint16_t port) {
     }
 
     m_running = true;
+    do_receive(); 
     m_networkThread = std::thread([this]() {
         try {
             m_ioContext.run();
@@ -114,25 +115,6 @@ void Network::start(const std::string& serverAddress, uint16_t port) {
     });
 }
 
-void Network::send(std::string message) {
-    auto data = std::make_shared<std::string>(std::move(message));
-    if (m_socket.is_open()) {
-        asio::post(m_ioContext, [this, data]() {
-            m_socket.async_send(
-                asio::buffer(*data), 
-                [this, data](const asio::error_code& error, std::size_t) {
-                    if(error) {
-                        spdlog::error("Failed to send message: {}", error.message());
-                    } else {
-                        spdlog::info("Message sent successfully: {}", *data);
-                    }
-                }
-            );
-        });
-    } else {
-        spdlog::error("Socket is not open, cannot send message.");
-    }
-}
 
 void Network::stop() {
     if(!m_running) {
@@ -145,6 +127,7 @@ void Network::stop() {
             asio::error_code ec;
             m_socket.shutdown(asio::ip::udp::socket::shutdown_both, ec);
             if(ec) {
+                m_socket.cancel(ec);
                 spdlog::error("Failed to shutdown socket: {}", ec.message());
             } else {
                 spdlog::info("Socket shutdown successfully.");  
@@ -162,4 +145,39 @@ void Network::stop() {
     }
 
 
+}
+
+void Network::do_receive() {
+    // 使用async_receive，因为它用于"已连接"的UDP套接字
+    m_socket.async_receive(
+        asio::buffer(m_recvBuffer),
+        [this](const asio::error_code& ec, std::size_t bytes_transferred) {
+            // 检查是否有错误
+            if (!ec) {
+                spdlog::debug("Received {} bytes from server.", bytes_transferred);
+                
+                // 如果设置了回调函数，就调用它
+                if (m_onMessageRecv) {
+                    try {
+                        m_onMessageRecv(m_recvBuffer.data(), bytes_transferred);
+                    } catch (const std::exception& e) {
+                        spdlog::error("Exception in message handler: {}", e.what());
+                    }
+                }
+
+                // 如果网络仍在运行，启动下一次接收
+                if (m_running) {
+                    do_receive();
+                }
+            } else {
+                // 如果操作被取消(通常是stop()导致的)，这是正常关闭流程的一部分
+                if (ec == asio::error::operation_aborted) {
+                    spdlog::info("Receive operation cancelled.");
+                } else {
+                    spdlog::error("Receive error: {}", ec.message());
+                    // 在发生错误时可以决定是否停止网络
+                    // stop(); 
+                }
+            }
+        });
 }

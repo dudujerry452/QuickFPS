@@ -77,8 +77,7 @@ class World {
     // interactive with outside
     void PushInput(const util::InputState& input); 
 
-    void PrepareState(std::unique_ptr<Entity>& ent); // id = 0: delete this ent 
-    void SwapState(uint32_t seq_num);  // thread safe. but need to ensure state is compeletely copied. 
+    void PrepareState(std::vector<util::EntityState> states);
 
     void ProvideUpdater();  // thread safe
     std::vector<util::EntityState> GetUpdater();
@@ -99,7 +98,6 @@ class World {
 
     std::mutex m_stateMutex;
     bool i_isStateConsumed;
-    int m_updateSequenceNumber; 
     std::vector<std::unique_ptr<Entity> > m_EntitiesBufferA, m_EntitiesBufferB;
     std::vector<std::unique_ptr<Entity> > *m_EntitiesBufferFront, *m_EntitiesBufferBack;
 

@@ -21,7 +21,13 @@ void Nstart(NetworkHandle handle, char* serverAddress, uint16_t port) {
 
 void Nsend(NetworkHandle handle, char* message) {
     if (handle && message) {
-        static_cast<Network*>(handle)->send(std::string(message));
+        static_cast<Network*>(handle)->send<std::string>(std::string(message));
+    }
+}
+
+void NsendBytes(NetworkHandle handle, std::vector<uint8_t> data) {
+    if (handle && !data.empty()) {
+        static_cast<Network*>(handle)->send<std::vector<uint8_t>>(data); 
     }
 }
 

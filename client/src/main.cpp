@@ -8,14 +8,13 @@
 #include "Input/Input.h"
 
 #include "Network/networkapi.h"
-#include "Network/Serialize.h"
+#include "Serialize/Serialize.h"
 
 #include "spdlog/spdlog.h"
 #include <iostream>
 
 #define MAX_COLUMNS 20
 
-LocalPlayer player;
 World world;
 Renderer renderer;
 NetworkHandle network = NcreateNetworkHandle(); // Network handle for client-side network operations
@@ -28,7 +27,7 @@ int main(void)
 {
 
     // start(0, 0, 0);
-    // serialization::test_entity_state_batch_serialization();
+    serialization::test_input_state_serialization();
 
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
     spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
@@ -44,6 +43,7 @@ int main(void)
     SetTargetFPS(60);                   
     //--------------------------------------------------------------------------------------
 
+    LocalPlayer player;
     player.SetPos({0,1.5,4});
     player.SetForward({1,0,0});
 
@@ -54,7 +54,7 @@ int main(void)
     auto plid = world.AddEntity(std::move(std::make_unique<LocalPlayer>(player)));
     auto ob = world.AddEntity(std::move(std::make_unique<Entity>(obs)));
     world.SetLocalPlayer(plid);
-    world.Attach();
+    world.Attach(ob);
 
     g_isRunning = true;
 
@@ -70,6 +70,9 @@ int main(void)
         }
     });
 
+    std::vector<util::EntityState> updater; // debug
+    int hasupdater = 0;
+
     while(!WindowShouldClose()) {
         renderer.Prepare(world.GetRenderState());
         renderer.Render();
@@ -79,12 +82,17 @@ int main(void)
         input.player_id = localplaer;
         if(input.sequence_number) {
             world.PushInput(input);
+            auto bs = serialization::serialize(input);
+            if(!bs.has_value()) {
+                spdlog::error("Failed to serialize input");
+            }
+            NsendBytes(network, std::move(bs.value()));
         } 
 
         if(IsKeyPressed(KEY_Q)) {
-            auto data = world.GetUpdater();
-            spdlog::debug("Updater size: {}", data.size());
-            for(const auto& ent : data) {
+            updater = world.GetUpdater();
+            spdlog::debug("Updater size: {}", updater.size());
+            for(const auto& ent : updater) {
                 spdlog::debug("Entity ID: {}, Position: ({}, {}, {}), Forward: ({}, {}, {}), Velocity: ({}, {}, {}), Seq: {}",
                     ent.id,
                     ent.position.x, ent.position.y, ent.position.z,
@@ -93,6 +101,13 @@ int main(void)
                     ent.seq_num
                 );
             }
+            hasupdater = 1;
+        }
+        if(IsKeyPressed(KEY_F)) {
+            if(hasupdater) {
+                world.PrepareState(updater); 
+            }
+
         }
     }
 

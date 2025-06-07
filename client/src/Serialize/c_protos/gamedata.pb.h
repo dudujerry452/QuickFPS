@@ -67,6 +67,9 @@ typedef struct _PEntityState {
     uint32_t seq_num;
     uint32_t health;
     uint32_t weapon; /* 原来是 11，现在改为 12 */
+    pb_size_t wasd_count;
+    bool wasd[4];
+    bool space;
 } PEntityState;
 
 /* -------------------
@@ -78,6 +81,14 @@ typedef struct _EntityStateBatch {
     PEntityState entity_state[20];
 } EntityStateBatch;
 
+typedef struct _GameMessage {
+    pb_size_t which_payload;
+    union {
+        PInputState input_state;
+        EntityStateBatch entity_state_batch;
+    } payload;
+} GameMessage;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -86,14 +97,16 @@ extern "C" {
 /* Initializer values for message structs */
 #define PInputState_init_default                 {0, 0, {0, 0, 0, 0}, 0, false, PInputState_Vector2_init_default, 0}
 #define PInputState_Vector2_init_default         {0, 0}
-#define PEntityState_init_default                {0, 0, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, 0, 0, 0, 0}
+#define PEntityState_init_default                {0, 0, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0}
 #define PEntityState_Vector3_init_default        {0, 0, 0}
 #define EntityStateBatch_init_default            {0, {PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default}}
+#define GameMessage_init_default                 {0, {PInputState_init_default}}
 #define PInputState_init_zero                    {0, 0, {0, 0, 0, 0}, 0, false, PInputState_Vector2_init_zero, 0}
 #define PInputState_Vector2_init_zero            {0, 0}
-#define PEntityState_init_zero                   {0, 0, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, 0, 0, 0, 0}
+#define PEntityState_init_zero                   {0, 0, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0}
 #define PEntityState_Vector3_init_zero           {0, 0, 0}
 #define EntityStateBatch_init_zero               {0, {PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero}}
+#define GameMessage_init_zero                    {0, {PInputState_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define PInputState_Vector2_x_tag                1
@@ -118,7 +131,11 @@ extern "C" {
 #define PEntityState_seq_num_tag                 10
 #define PEntityState_health_tag                  11
 #define PEntityState_weapon_tag                  12
+#define PEntityState_wasd_tag                    13
+#define PEntityState_space_tag                   14
 #define EntityStateBatch_entity_state_tag        1
+#define GameMessage_input_state_tag              1
+#define GameMessage_entity_state_batch_tag       2
 
 /* Struct field encoding specification for nanopb */
 #define PInputState_FIELDLIST(X, a) \
@@ -149,7 +166,9 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  pos_point,         8) \
 X(a, STATIC,   SINGULAR, BOOL,     is_player,         9) \
 X(a, STATIC,   SINGULAR, UINT32,   seq_num,          10) \
 X(a, STATIC,   SINGULAR, UINT32,   health,           11) \
-X(a, STATIC,   SINGULAR, UINT32,   weapon,           12)
+X(a, STATIC,   SINGULAR, UINT32,   weapon,           12) \
+X(a, STATIC,   REPEATED, BOOL,     wasd,             13) \
+X(a, STATIC,   SINGULAR, BOOL,     space,            14)
 #define PEntityState_CALLBACK NULL
 #define PEntityState_DEFAULT NULL
 #define PEntityState_position_MSGTYPE PEntityState_Vector3
@@ -172,11 +191,20 @@ X(a, STATIC,   REPEATED, MESSAGE,  entity_state,      1)
 #define EntityStateBatch_DEFAULT NULL
 #define EntityStateBatch_entity_state_MSGTYPE PEntityState
 
+#define GameMessage_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,input_state,payload.input_state),   1) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,entity_state_batch,payload.entity_state_batch),   2)
+#define GameMessage_CALLBACK NULL
+#define GameMessage_DEFAULT NULL
+#define GameMessage_payload_input_state_MSGTYPE PInputState
+#define GameMessage_payload_entity_state_batch_MSGTYPE EntityStateBatch
+
 extern const pb_msgdesc_t PInputState_msg;
 extern const pb_msgdesc_t PInputState_Vector2_msg;
 extern const pb_msgdesc_t PEntityState_msg;
 extern const pb_msgdesc_t PEntityState_Vector3_msg;
 extern const pb_msgdesc_t EntityStateBatch_msg;
+extern const pb_msgdesc_t GameMessage_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define PInputState_fields &PInputState_msg
@@ -184,12 +212,14 @@ extern const pb_msgdesc_t EntityStateBatch_msg;
 #define PEntityState_fields &PEntityState_msg
 #define PEntityState_Vector3_fields &PEntityState_Vector3_msg
 #define EntityStateBatch_fields &EntityStateBatch_msg
+#define GameMessage_fields &GameMessage_msg
 
 /* Maximum encoded size of messages (where known) */
-#define EntityStateBatch_size                    2660
-#define GAMEDATA_PB_H_MAX_SIZE                   EntityStateBatch_size
+#define EntityStateBatch_size                    2860
+#define GAMEDATA_PB_H_MAX_SIZE                   GameMessage_size
+#define GameMessage_size                         2863
 #define PEntityState_Vector3_size                15
-#define PEntityState_size                        130
+#define PEntityState_size                        140
 #define PInputState_Vector2_size                 10
 #define PInputState_size                         54
 

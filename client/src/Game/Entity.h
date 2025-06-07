@@ -4,7 +4,11 @@
 #include "../Util/Util.h"
 #include <inttypes.h>
 
+#include <memory>
 
+class Entity; 
+
+std::unique_ptr<Entity> GetEntityFromState(util::EntityState state);
 
 /**
  * Entity class
@@ -49,7 +53,9 @@ class Entity {
                 0, 
                 0, 
                 0, // health
-                0  // weapon
+                0,  // weapon
+                {0,0,0,0},
+                0
             };
         }
 

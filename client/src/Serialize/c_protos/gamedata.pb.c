@@ -21,4 +21,7 @@ PB_BIND(PEntityState_Vector3, PEntityState_Vector3, AUTO)
 PB_BIND(EntityStateBatch, EntityStateBatch, 2)
 
 
+PB_BIND(GameMessage, GameMessage, 2)
+
+
 

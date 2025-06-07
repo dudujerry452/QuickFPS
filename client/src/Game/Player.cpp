@@ -10,6 +10,7 @@
 
 
 Player::Player():
+Entity(), 
 m_latestSeq(0)
 {
     m_entityType = EntityType::Player;   
@@ -46,7 +47,9 @@ util::EntityState Player::GetState() const {
         1, 
         m_latestSeq, // sequence number
         5, // health
-        5  // weapon
+        5,  // weapon
+        {m_wasd[0], m_wasd[1], m_wasd[2], m_wasd[3]},
+        m_space
     };
 }
 
@@ -110,10 +113,27 @@ void Player::UpdateByInput() {
 
 LocalPlayer::LocalPlayer() {
     m_entityType = EntityType::LocalPlayer;
+    m_lastTicks = 0;
 }
+
+LocalPlayer::LocalPlayer(const Player& player) :
+Entity(player),
+Player(player) {
+    m_entityType = EntityType::LocalPlayer;
+    m_lastTicks = 0;
+
+    spdlog::debug("player's wasd: {}, {}, {}, {}", m_wasd[0], m_wasd[1], m_wasd[2], m_wasd[3]);
+}
+
+void LocalPlayer::PhysicsUpdate() {
+    Player::PhysicsUpdate();
+    m_lastTicks++;
+}
+
 void LocalPlayer::PushNewInput(const util::InputState& new_input) {
+    Player::PushNewInput(new_input);
     if(new_input.sequence_number) {
-        Player::PushNewInput(new_input);
-        m_inputQueue.push_back(new_input);
+        m_inputQueue.push_back({new_input, m_lastTicks});
+        m_lastTicks = 0; 
     } 
 }

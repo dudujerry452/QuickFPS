@@ -123,32 +123,84 @@ void World::WorldUpdate() {
     }
 
     // handle world state update 
-
+    bool hasstateupdate = false;
     {
         std::lock_guard<std::mutex> lock(m_stateMutex);
         if(!i_isStateConsumed) { // if not consumed, consume now
-            spdlog::info("world get update state, size: {}", m_EntitiesBufferFront->size());
-            m_entities.clear(); // clear all entities
-            for(auto& ent: *m_EntitiesBufferFront) {
-                // TODO: 增量式更新 -------------------
-                // if(ent.GetID() == 0) { 
-                //     // DelObject(ent.GetID());
-                // } else {
-                //     auto& obj = GetEntity(ent.GetID());
-                //     if(obj->IsError()) {
-                //         spdlog::error("World::WorldUpdate: Entity not exists: {}", ent.GetID());
-                //         continue; // not exists
-                //     }
-                //     *obj = ent; // update state
-                // }
-                // ---------------
-                uint32_t id = ent->GetID();
-                if(id == 0) continue; 
-                m_entities[id] = std::move(ent); // move entity to world
-            }
             i_isStateConsumed = true; // mark as consumed
+            spdlog::info("world get update state, size: {}", m_EntitiesBufferFront->size());
+            std::unique_ptr<Entity> hero_ind = nullptr;
+            for(auto& state: *m_EntitiesBufferFront) {
+                cout << state.get() << endl;
+                if(state->GetID() == m_localPlayer) {
+                    hero_ind = std::move(state);
+                }
+            }
+            if(hero_ind) { 
+                Player* rhero = dynamic_cast<Player*>(hero_ind.get());
+                LocalPlayer* lhero = dynamic_cast<LocalPlayer*>(m_entities[m_localPlayer].get());
+                uint32_t oldest_seq = lhero->GetOldestSeq();
+                std::cout << oldest_seq << " " << rhero->GetLatestSeq() << std::endl;
+                if(rhero && oldest_seq <= rhero->GetLatestSeq()) { // has value to update
+
+                    // ---------------------------
+
+                    uint32_t new_oldest_seq = rhero->GetLatestSeq();
+
+                    auto& afterqueue = lhero->m_inputQueue; 
+                    while(
+                        !afterqueue.empty() && 
+                        afterqueue.front().first.sequence_number <= new_oldest_seq
+                        ) {
+                            afterqueue.pop_front(); // 删掉早于该次更新的输入
+                        }
+                    auto newqueue = std::move(afterqueue);
+
+                    spdlog::debug("before update: id: {}, pos: ({}, {}, {})", lhero->GetID(), lhero->GetPos().x, lhero->GetPos().y, lhero->GetPos().z);
+                    m_entities.clear(); // clear all entities
+                    for(auto& ent: *m_EntitiesBufferFront) {
+                        // TODO: 增量式更新 
+                        if(!ent) continue; 
+                        uint32_t id = ent->GetID();
+                        spdlog::debug("id = {}", id);
+                        if(id == 0) continue; 
+                        if(id != m_localPlayer) {
+                            m_entities[id] = std::move(ent); // move entity to world
+                        } 
+                    }
+
+                    auto newlocalhero = std::make_unique<LocalPlayer>(*rhero);
+                    newlocalhero->m_inputQueue = std::move(newqueue);
+                    m_entities[m_localPlayer] = std::move(newlocalhero);
+                    auto& xxent = m_entities[m_localPlayer];
+                    spdlog::debug("After update: id: {}, pos: ({}, {}, {})", xxent->GetID(), xxent->GetPos().x, xxent->GetPos().y, xxent->GetPos().z);
+                    // spdlog::debug("after update: id: {}, pos: ({}, {}, {})", id, ent->GetPos().x, ent->GetPos().y, ent->GetPos().z);
+                    hasstateupdate = true;
+                    // ---------------------------
+
+                }
+                    
+            }
+
+
         }
     }
+
+    if(hasstateupdate) {
+        auto her= dynamic_cast<LocalPlayer*>(GetEntity(m_localPlayer).get());
+        auto que = her->m_inputQueue;
+        while(!que.empty()) {
+            uint32_t ticks = que.front().second;
+            for(int i = 0; i < ticks; i ++) {
+                WorldPhysicsUpdate();
+                WorldAnimeUpdate(); 
+            }
+            her->PushNewInput(que.front().first);
+            que.pop_front();
+        }
+    }
+
+    // normal logics
 
     WorldPhysicsUpdate(); 
     WorldAnimeUpdate();
@@ -231,10 +283,13 @@ void World::Attach() {
 RenderStateBuffer World::GetRenderState() {
     RenderStateBuffer render_buffer;
     // render_buffer.entities.reserve(m_entities.size());
-    for(auto& e: m_entities) {
-        render_buffer.entities.push_back(
-            *e.second // copy data
-        );
+    {
+        std::lock_guard<std::mutex> lock(m_stateMutex);
+        for(auto& e: m_entities) {
+            render_buffer.entities.push_back(
+                *e.second // copy data
+            );
+        }
     }
     render_buffer.objects = m_worldMap.objects;
     render_buffer.camera = m_camera.GetCamera();
@@ -247,18 +302,20 @@ void World::PushInput(const util::InputState& input) {
     m_inputQueue.enqueue(input);
 }
 
-void World::PrepareState(std::unique_ptr<Entity>& ent) {
-    m_EntitiesBufferBack->push_back(std::move(ent)); 
-}
-void World::SwapState(uint32_t seq_num) {
+void World::PrepareState(std::vector<util::EntityState> states) {
+    for(auto & state: states) {
+        m_EntitiesBufferBack->push_back(std::move(
+            GetEntityFromState(state)
+        ));
+    }
     {
         std::lock_guard<std::mutex> lock(m_stateMutex);
         i_isStateConsumed = false;
         std::swap(m_EntitiesBufferFront, m_EntitiesBufferBack); 
-        m_updateSequenceNumber = seq_num; 
     }
     m_EntitiesBufferBack->clear(); // clear back buffer
-} 
+    
+}
 
 void World::ProvideUpdater() { // after thread start, it is always ready to provide entity state
     for(auto& [ind, ent]: m_entities) {

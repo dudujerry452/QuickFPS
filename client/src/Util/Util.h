@@ -4,6 +4,14 @@
 #include <stdexcept>
 #include <inttypes.h>
 
+// C++17 a helper for creating an overloaded visitor
+template<class... Ts>
+struct overloaded : Ts... { using Ts::operator()...; };
+
+// C++17 deduction guide (makes it easy to use)
+template<class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
 namespace util {
 
 // for raylib
@@ -14,6 +22,25 @@ typedef struct BoundingBox {
 } BoundingBox;
 
 // custom 
+
+/**
+ * InputState & EntityState : 
+ * network communication structs
+ * if modify, these parts should be changed : 
+ *  - whole Serialize ( proto )
+ *  - InputManager
+ *  - Entity - GetState
+ *  - Entity - GetEntityFromState
+ *  - Player - UpdateByInput 
+ *  - World -  PushInput
+ *           - PrepareState
+ *          -  ProvideUpdater
+ *          -  GetUpdater
+ *  So THINK about it before you modify them
+ */
+
+
+
 
 
 struct InputState {
@@ -36,6 +63,8 @@ struct EntityState{
     uint32_t seq_num; 
     uint32_t health; 
     uint32_t weapon;
+    unsigned char wasd[4];
+    unsigned char space;
 };
 
 

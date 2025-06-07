@@ -5,7 +5,6 @@
 
 #include <queue>
 
-
 class Player: virtual public Entity {
 
     public: 
@@ -19,6 +18,8 @@ class Player: virtual public Entity {
         m_latestSeq = other.m_latestSeq;
         m_health = other.m_health;
         m_weapon = other.m_weapon;
+        memcpy(m_wasd, other.m_wasd, 4);
+        m_space = other.m_space;
         return *this;
     }
 
@@ -31,6 +32,7 @@ class Player: virtual public Entity {
 
     // Input related
     util::EntityState GetState() const override; 
+    uint32_t GetLatestSeq() const { return m_latestSeq; }
     virtual void PushNewInput(const util::InputState& new_input);
     void UpdateByInput(); 
     // void ApplyAuthInput(const util::PlayerState& auth_state);
@@ -40,6 +42,10 @@ class Player: virtual public Entity {
     uint32_t GetHealth() const { return m_health; }
     void SetWeapon(uint32_t weapon) { m_weapon = weapon; }
     uint32_t GetWeapon() const { return m_weapon; }
+
+
+
+    friend std::unique_ptr<Entity> GetEntityFromState(util::EntityState state);  
 
     protected:
     // ------ deal with input --------
@@ -64,6 +70,7 @@ class LocalPlayer: virtual public Player{
     public: 
 
     LocalPlayer();
+    LocalPlayer(const Player& player); 
     ~LocalPlayer() override {}
 
     LocalPlayer* Clone() const override {
@@ -77,13 +84,18 @@ class LocalPlayer: virtual public Player{
         return *this;
     }
 
-    // void PhysicsUpdate() override;
+    void PhysicsUpdate() override;
     void PushNewInput(const util::InputState& new_input) override;
+    uint32_t GetOldestSeq() const { 
+        if(m_inputQueue.empty()) return 0;
+        return m_inputQueue.front().first.sequence_number; 
+    }
 
-    
+    friend class World;
 
     private: 
-    std::deque<util::InputState> m_inputQueue; 
+    std::deque<std::pair<util::InputState, uint32_t> > m_inputQueue;
+    uint32_t m_lastTicks; 
     private: 
 
 };

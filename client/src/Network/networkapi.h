@@ -3,6 +3,7 @@
 
 
 #include <stdint.h>
+#include <vector>
 
 class Network; 
 
@@ -13,6 +14,7 @@ void NdestroyNetworkHandle(NetworkHandle handle);
 
 void Nstart(NetworkHandle handle, char* serverAddress, uint16_t port);
 void Nsend(NetworkHandle handle, char* message);
+void NsendBytes(NetworkHandle handle, std::vector<uint8_t> data); 
 
 void Nstop(NetworkHandle handle);
 

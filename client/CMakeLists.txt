@@ -63,11 +63,11 @@ if(GENERATE_PROTO_TOGETHER)
     find_package(Nanopb REQUIRED)
     
     set(PFILE_NAME "gamedata")
-    set(PROTO_DIR "${CMAKE_CURRENT_LIST_DIR}/src/Network/Protos")
+    set(PROTO_DIR "${CMAKE_CURRENT_LIST_DIR}/src/Serialize/Protos")
     set(PROTO_FILE ${PROTO_DIR}/${PFILE_NAME}.proto)
     set(PROTO_OPTION_FILE ${PROTO_DIR}/${PFILE_NAME}.options)
 
-    set(PROTO_GENE_DIR "${CMAKE_CURRENT_LIST_DIR}/src/Network/c_protos")
+    set(PROTO_GENE_DIR "${CMAKE_CURRENT_LIST_DIR}/src/Serialize/c_protos")
     # set(PROTO_GENE_C ${PROTO_GENE_DIR}/sensor.pb.c)
     # set(PROTO_GENE_H ${PROTO_GENE_DIR}/sensor.pb.h)
 
@@ -95,22 +95,30 @@ if(GENERATE_PROTO_TOGETHER)
     )
 endif()
 
+# ------------Serialize -----------------
+
+file(GLOB PROTO_SOURCE_FILES "lib/nanopb/*.c")
+file(GLOB PROTO_C_FILES "src/Serialize/c_protos/*.c")
+file(GLOB SERIAL_SOURCES "src/Serialize/*.cpp")
+add_library(Serialize STATIC 
+    ${PROTO_SOURCE_FILES}
+    ${PROTO_C_FILES}
+    ${SERIAL_SOURCES}
+)
+target_include_directories(Serialize PUBLIC lib/nanopb/)
+target_include_directories(Serialize PUBLIC src/Serialize/c_proto)
+
 
 
 # -------------Network --------------------
 file(GLOB NETWORK_SOURCES "src/Network/*.cpp")
-file(GLOB PROTO_SOURCE_FILES "lib/nanopb/*.c")
-file(GLOB PROTO_C_FILES "src/Network/c_protos/*.c")
 add_library(Network STATIC
-    ${PROTO_SOURCE_FILES}
-    ${PROTO_C_FILES}
     ${NETWORK_SOURCES}
 )
 target_include_directories(Network PUBLIC lib/asio/include)
-target_include_directories(Network PUBLIC lib/nanopb/)
-target_include_directories(Network PUBLIC src/Network/c_proto)
 target_link_libraries(Network PUBLIC spdlog)
 target_link_libraries(Network PUBLIC GameLogic)
+target_link_libraries(Network PUBLIC Serialize)
 
 target_compile_definitions(
     Network PUBLIC 
@@ -143,6 +151,7 @@ set(CAPI_SOURCES
 add_library(wldcapi STATIC ${CAPI_SOURCES})
 
 target_link_libraries(wldcapi PUBLIC GameLogic)
+target_link_libraries(wldcapi PUBLIC Serialize)
 
 message(STATUS "CAPI library created successfully.")
 

@@ -50,11 +50,13 @@ util::InputState FromNanopb(const PInputState& nanopbInputState) {
 
     // wasd_pressed: Nanopb uint32_t[4] with _count to util::InputState.wasd_pressed (std::array<bool, 4>)
     for (size_t i = 0; i < 4; ++i) {
-        if (i < nanopbInputState.wasd_pressed_count) {
-            nativeState.wasd_pressed[i] = (nanopbInputState.wasd_pressed[i] != 0);
-        } else {
-            nativeState.wasd_pressed[i] = false; // Default if not present in nanopb message
-        }
+        // if (i < nanopbInputState.wasd_pressed_count) {
+        //     nativeState.wasd_pressed[i] = (nanopbInputState.wasd_pressed[i] != 0);
+        // } else {
+        //     nativeState.wasd_pressed[i] = false; // Default if not present in nanopb message
+        // }
+        nativeState.wasd_pressed[i] = nanopbInputState.wasd_pressed[i]; 
+
     }
 
     nativeState.space_pressed = (nanopbInputState.space_pressed != 0);
@@ -129,6 +131,10 @@ util::EntityState FromNanopb(const PEntityState& nanopbEntityState) {
     nativeState.seq_num = nanopbEntityState.seq_num;
     nativeState.health = nanopbEntityState.health;
     nativeState.weapon = nanopbEntityState.weapon;
+
+    memcpy(&nativeState.wasd, &nanopbEntityState.wasd, sizeof(nanopbEntityState.wasd));
+    nativeState.space = nanopbEntityState.space;
+
     return nativeState;
 }
 
@@ -152,6 +158,10 @@ bool ToNanopb(const util::EntityState& nativeEntityState, PEntityState* outNanop
     outNanopbEntityState->seq_num = nativeEntityState.seq_num;
     outNanopbEntityState->health = nativeEntityState.health;
     outNanopbEntityState->weapon = nativeEntityState.weapon;
+
+    memcpy(&outNanopbEntityState->wasd, &nativeEntityState.wasd, sizeof(nativeEntityState.wasd));
+    outNanopbEntityState->space = nativeEntityState.space;
+
     return true;
 }
 
