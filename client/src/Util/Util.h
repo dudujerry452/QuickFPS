@@ -16,14 +16,22 @@ typedef struct BoundingBox {
 // custom 
 
 
+// struct InputState {
+//     uint32_t player_id; 
+//     Vector2 moveOnPlane;
+//     Vector2 mouseDelta;
+//     bool isShooting = false;
+//     bool isJumping = false;
+//     uint32_t sequence_number = 0;
+// };
+
 struct InputState {
     uint32_t player_id; 
-    Vector2 moveOnPlane;
-    Vector2 mouseDelta;
-    bool isShooting = false;
-    bool isJumping = false;
-    uint32_t sequence_number = 0;
-};
+    unsigned char wasd_pressed[4]; // 0: no op; 1: press; 2: release 
+    unsigned char space_pressed; // space key for jumping
+    Vector2 mouseDelta; // mouse movement delta
+    uint32_t sequence_number = 0; // sequence number for input events
+}; 
 
 /* 
         // meta data 
@@ -49,6 +57,7 @@ struct EntityState{
     BoundingBox bounding_box; 
     Vector3 pos_point; 
     unsigned char is_player; 
+    uint32_t seq_num; 
     uint32_t health; 
     uint32_t weapon;
 };

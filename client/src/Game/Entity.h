@@ -47,6 +47,7 @@ class Entity {
                 m_boundingBox, 
                 m_posPoint,
                 0, 
+                0, 
                 0, // health
                 0  // weapon
             };

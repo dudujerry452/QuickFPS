@@ -59,22 +59,38 @@ int main(void)
     // network.start("127.0.0.1", 1077);
     // network.send("Hello from client!");
 
+    uint32_t localplaer = world.GetLocalPlayer();
+
     std::thread physical_thread([&] {
         spdlog::info("Physical Thread Start");
         while(g_isRunning.load(std::memory_order_relaxed)) {
-            auto input = IM.Pop();
-            input.player_id = world.GetLocalPlayer();
-            if(input.sequence_number) {
-                world.PushInput(input);
-            } 
             world.WorldUpdateFixed();
         }
     });
 
     while(!WindowShouldClose()) {
         IM.CheckInput();
+        auto input = IM.Pop();
+        input.player_id = localplaer;
+        if(input.sequence_number) {
+            world.PushInput(input);
+        } 
         renderer.Prepare(world.GetRenderState());
         renderer.Render();
+
+        if(IsKeyPressed(KEY_Q)) {
+            auto data = world.GetUpdater();
+            spdlog::debug("Updater size: {}", data.size());
+            for(const auto& ent : data) {
+                spdlog::debug("Entity ID: {}, Position: ({}, {}, {}), Forward: ({}, {}, {}), Velocity: ({}, {}, {}), Seq: {}",
+                    ent.id,
+                    ent.position.x, ent.position.y, ent.position.z,
+                    ent.forward.x, ent.forward.y, ent.forward.z,
+                    ent.velocity.x, ent.velocity.y, ent.velocity.z,
+                    ent.seq_num
+                );
+            }
+        }
     }
 
     g_isRunning.store(false, std::memory_order_relaxed);

@@ -84,19 +84,19 @@ void SetPlayerWeapon(WorldHandle world, uint32_t player_id, uint32_t weapon) {
         }
     }
 }
-void PushPlayerInput(WorldHandle world, uint32_t player_id, 
-                      float move_x, float move_y, 
-                      float mouse_delta_x, float mouse_delta_y, 
-                      int is_jumping) {
-    auto w = reinterpret_cast<World*>(world);
-    auto& player = w->GetEntity(player_id);
-    if(player) {
-        if(auto p = dynamic_cast<LocalPlayer*>(player.get())) {
-            util::InputState input;
-            input.moveOnPlane = {move_x, move_y};
-            input.mouseDelta = {mouse_delta_x, mouse_delta_y};
-            input.isJumping = is_jumping;
-            p->PushNewInput(input);
-        }
-    }
-}
+// void PushPlayerInput(WorldHandle world, uint32_t player_id, 
+//                       float move_x, float move_y, 
+//                       float mouse_delta_x, float mouse_delta_y, 
+//                       int is_jumping) {
+//     auto w = reinterpret_cast<World*>(world);
+//     auto& player = w->GetEntity(player_id);
+//     if(player) {
+//         if(auto p = dynamic_cast<LocalPlayer*>(player.get())) {
+//             util::InputState input;
+//             input.moveOnPlane = {move_x, move_y};
+//             input.mouseDelta = {mouse_delta_x, mouse_delta_y};
+//             input.isJumping = is_jumping;
+//             p->PushNewInput(input);
+//         }
+//     }
+// }

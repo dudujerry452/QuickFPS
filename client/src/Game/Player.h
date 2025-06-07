@@ -16,6 +16,7 @@ class Player: virtual public Entity {
     Player& operator=(Player& other) {
         if (this == &other) return *this; // self-assignment check
         Entity::operator=(other);
+        m_latestSeq = other.m_latestSeq;
         m_health = other.m_health;
         m_weapon = other.m_weapon;
         return *this;
@@ -31,6 +32,7 @@ class Player: virtual public Entity {
     // Input related
     util::EntityState GetState() const override; 
     virtual void PushNewInput(const util::InputState& new_input);
+    void UpdateByInput(); 
     // void ApplyAuthInput(const util::PlayerState& auth_state);
 
     // Game related
@@ -43,6 +45,14 @@ class Player: virtual public Entity {
     // ------ deal with input --------
 
     protected: 
+
+    // input related 
+    uint32_t m_latestSeq; 
+    unsigned char m_wasd[4]; // 0: no op; 1: press; 2: release
+    unsigned char m_space; // space key for jumping
+
+
+
     uint32_t m_health; 
     uint32_t m_weapon;
 

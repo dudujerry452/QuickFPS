@@ -26,10 +26,10 @@ void SetPlayerBoundingBox(WorldHandle world, uint32_t player_id,
                              float box_max_x, float box_max_y, float box_max_z);
 void SetPlayerHealth(WorldHandle world, uint32_t player_id, uint32_t health);
 void SetPlayerWeapon(WorldHandle world, uint32_t player_id, uint32_t weapon);
-void PushPlayerInput(WorldHandle world, uint32_t player_id, 
-                     float move_x, float move_y, 
-                     float mouse_delta_x, float mouse_delta_y, 
-                     int is_jumping);
+// void PushPlayerInput(WorldHandle world, uint32_t player_id, 
+//                      float move_x, float move_y, 
+//                      float mouse_delta_x, float mouse_delta_y, 
+//                      int is_jumping);
 
 #ifdef __cplusplus
 }

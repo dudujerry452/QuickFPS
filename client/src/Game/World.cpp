@@ -243,6 +243,7 @@ RenderStateBuffer World::GetRenderState() {
 }
 
 void World::PushInput(const util::InputState& input) {
+    if(input.sequence_number == 0) return; 
     m_inputQueue.enqueue(input);
 }
 
