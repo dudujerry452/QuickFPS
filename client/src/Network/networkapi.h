@@ -16,7 +16,6 @@ void Nsend(NetworkHandle handle, char* message);
 
 void Nstop(NetworkHandle handle);
 
-int xxtest();
 
 
 

@@ -6,7 +6,6 @@
 #include <cstdio>
 
 
-int xxxtest(); 
 
 /* 
 Network: A class handle client side network information exchange. 

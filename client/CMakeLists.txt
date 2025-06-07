@@ -62,7 +62,7 @@ if(GENERATE_PROTO_TOGETHER)
     set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/lib/nanopb/extra")
     find_package(Nanopb REQUIRED)
     
-    set(PFILE_NAME "sensor")
+    set(PFILE_NAME "gamedata")
     set(PROTO_DIR "${CMAKE_CURRENT_LIST_DIR}/src/Network/Protos")
     set(PROTO_FILE ${PROTO_DIR}/${PFILE_NAME}.proto)
     set(PROTO_OPTION_FILE ${PROTO_DIR}/${PFILE_NAME}.options)

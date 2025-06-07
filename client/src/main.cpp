@@ -8,6 +8,7 @@
 #include "Input/Input.h"
 
 #include "Network/networkapi.h"
+#include "Network/Serialize.h"
 
 #include "spdlog/spdlog.h"
 #include <iostream>
@@ -26,8 +27,8 @@ std::atomic<bool> g_isRunning{false};
 int main(void)
 {
 
-    xxtest();
     // start(0, 0, 0);
+    // serialization::test_entity_state_batch_serialization();
 
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
     spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
