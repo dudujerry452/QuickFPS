@@ -35,7 +35,6 @@ message PEntityState {
   uint32 id = 1;
   bool is_error = 2;
 
-  // 嵌套的 Vector3 定义保持不变
   message Vector3 {
     float x = 1;
     float y = 2;
@@ -46,22 +45,17 @@ message PEntityState {
   Vector3 forward = 4;
   Vector3 velocity = 5;
 
-  // 【优化点 2】: 拆分 BoundingBox。
-  // 不再使用嵌套的 BoundingBox 消息，而是直接定义 min 和 max 两个 Vector3。
-  // 这使得 Protobuf 结构与你的原生 Raylib BoundingBox 结构完全匹配。
-  // (旧的 BoundingBox 定义已被移除)
   Vector3 bounding_box_min = 6;
   Vector3 bounding_box_max = 7;
   
-  // 【优化点 3】: 重新编号后续字段。
-  // 因为我们用字段 7 替换了原来的字段 6，所以后续字段需要顺延。
   Vector3 pos_point = 8;
   bool is_player = 9;
   uint32 seq_num = 10;
   uint32 health = 11;
-  uint32 weapon = 12; // 原来是 11，现在改为 12
+  uint32 weapon = 12; 
   repeated bool wasd = 13; 
   bool space = 14;
+  uint32 lastticks = 15;
 }
 
 

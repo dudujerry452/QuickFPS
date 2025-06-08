@@ -33,6 +33,9 @@ void Player::PhysicsUpdate() {
     m_velocity.x = v2d.x, m_velocity.z = v2d.y;
 
     m_velocity.y -= 0.005f; // gravity
+
+
+    m_lastTicks++;
 } 
 
 util::EntityState Player::GetState() const {
@@ -49,7 +52,8 @@ util::EntityState Player::GetState() const {
         5, // health
         5,  // weapon
         {m_wasd[0], m_wasd[1], m_wasd[2], m_wasd[3]},
-        m_space
+        m_space, 
+        m_lastTicks
     };
 }
 
@@ -78,7 +82,7 @@ void Player::PushNewInput(const util::InputState& new_input) {
     CameraPitch(&tmp, -new_input.mouseDelta.y*0.005f, true, false, true);
     SetForward(tmp.target - tmp.position);
 
-
+    m_lastTicks = 0; 
 }
 
 void Player::UpdateByInput() {
@@ -127,13 +131,11 @@ Player(player) {
 
 void LocalPlayer::PhysicsUpdate() {
     Player::PhysicsUpdate();
-    m_lastTicks++;
 }
 
 void LocalPlayer::PushNewInput(const util::InputState& new_input) {
-    Player::PushNewInput(new_input);
     if(new_input.sequence_number) {
         m_inputQueue.push_back({new_input, m_lastTicks});
-        m_lastTicks = 0; 
     } 
+    Player::PushNewInput(new_input);
 }

@@ -55,6 +55,7 @@ class Entity {
                 0, // health
                 0,  // weapon
                 {0,0,0,0},
+                0, 
                 0
             };
         }

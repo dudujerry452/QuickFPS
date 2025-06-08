@@ -124,6 +124,7 @@ void World::WorldUpdate() {
 
     // handle world state update 
     bool hasstateupdate = false;
+    uint32_t last_ticks = 0, rlast_ticks = 0;
     {
         std::lock_guard<std::mutex> lock(m_stateMutex);
         if(!i_isStateConsumed) { // if not consumed, consume now
@@ -140,12 +141,12 @@ void World::WorldUpdate() {
                 Player* rhero = dynamic_cast<Player*>(hero_ind.get());
                 LocalPlayer* lhero = dynamic_cast<LocalPlayer*>(m_entities[m_localPlayer].get());
                 uint32_t oldest_seq = lhero->GetOldestSeq();
-                std::cout << oldest_seq << " " << rhero->GetLatestSeq() << std::endl;
                 if(rhero && oldest_seq <= rhero->GetLatestSeq()) { // has value to update
 
                     // ---------------------------
 
                     uint32_t new_oldest_seq = rhero->GetLatestSeq();
+                    rlast_ticks = rhero->m_lastTicks; // use later 
 
                     auto& afterqueue = lhero->m_inputQueue; 
                     while(
@@ -154,9 +155,9 @@ void World::WorldUpdate() {
                         ) {
                             afterqueue.pop_front(); // 删掉早于该次更新的输入
                         }
+                   last_ticks = lhero->m_lastTicks;
                     auto newqueue = std::move(afterqueue);
 
-                    spdlog::debug("before update: id: {}, pos: ({}, {}, {})", lhero->GetID(), lhero->GetPos().x, lhero->GetPos().y, lhero->GetPos().z);
                     m_entities.clear(); // clear all entities
                     for(auto& ent: *m_EntitiesBufferFront) {
                         // TODO: 增量式更新 
@@ -173,8 +174,6 @@ void World::WorldUpdate() {
                     newlocalhero->m_inputQueue = std::move(newqueue);
                     m_entities[m_localPlayer] = std::move(newlocalhero);
                     auto& xxent = m_entities[m_localPlayer];
-                    spdlog::debug("After update: id: {}, pos: ({}, {}, {})", xxent->GetID(), xxent->GetPos().x, xxent->GetPos().y, xxent->GetPos().z);
-                    // spdlog::debug("after update: id: {}, pos: ({}, {}, {})", id, ent->GetPos().x, ent->GetPos().y, ent->GetPos().z);
                     hasstateupdate = true;
                     // ---------------------------
 
@@ -189,6 +188,22 @@ void World::WorldUpdate() {
     if(hasstateupdate) {
         auto her= dynamic_cast<LocalPlayer*>(GetEntity(m_localPlayer).get());
         auto que = her->m_inputQueue;
+        if(!que.empty()) {
+            uint32_t oldest_ticks = que.front().second; 
+            if(oldest_ticks < rlast_ticks) { // 如果服务端已模拟的ticks多于下一次输入前的ticks
+                spdlog::warn("server has simulated more ticks than next input. client : {}, server: {}", oldest_ticks, rlast_ticks);
+                oldest_ticks = 0; 
+            } else {
+                oldest_ticks -= rlast_ticks;
+            }
+            for(int i = 0; i < oldest_ticks; i ++) {
+                WorldPhysicsUpdate();
+                WorldAnimeUpdate(); 
+            }
+            her->PushNewInput(que.front().first);
+            que.pop_front(); 
+        }
+        
         while(!que.empty()) {
             uint32_t ticks = que.front().second;
             for(int i = 0; i < ticks; i ++) {
@@ -197,6 +212,10 @@ void World::WorldUpdate() {
             }
             her->PushNewInput(que.front().first);
             que.pop_front();
+        }
+        for(int i = 0; i < last_ticks; i ++) {
+            WorldPhysicsUpdate();
+            WorldAnimeUpdate(); 
         }
     }
 

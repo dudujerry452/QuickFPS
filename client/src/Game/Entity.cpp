@@ -41,6 +41,7 @@ std::unique_ptr<Entity> GetEntityFromState(util::EntityState state) {
         player.SetWeapon(state.weapon);
         memcpy(player.m_wasd, state.wasd, sizeof(state.wasd));
         player.m_space = state.space;
+        player.m_lastTicks = state.lastticks;
         return std::make_unique<Player>(std::move(player));
     } else {
         Entity entity;

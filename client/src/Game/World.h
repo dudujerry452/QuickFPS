@@ -72,7 +72,8 @@ class World {
     void Attach();
 
     // render data transmit
-    RenderStateBuffer GetRenderState();
+    RenderStateBuffer GetRenderState(); 
+                                        
 
     // interactive with outside
     void PushInput(const util::InputState& input); 

@@ -36,6 +36,8 @@ typedef struct BoundingBox {
  *           - PrepareState
  *          -  ProvideUpdater
  *          -  GetUpdater
+ *  - CAPI - CInputState
+ *         - InputConvert
  *  So THINK about it before you modify them
  */
 
@@ -65,6 +67,7 @@ struct EntityState{
     uint32_t weapon;
     unsigned char wasd[4];
     unsigned char space;
+    uint32_t lastticks; 
 };
 
 

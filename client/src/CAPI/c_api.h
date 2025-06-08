@@ -31,6 +31,16 @@ void SetPlayerWeapon(WorldHandle world, uint32_t player_id, uint32_t weapon);
 
 int GetAllEntitiesState(WorldHandle world, uint8_t** out_data, uint32_t* out_size); 
 
+struct CInputState {
+    uint32_t player_id; 
+    unsigned char wasd_pressed[4]; // 0: no op; 1: press; 2: release 
+    unsigned char space_pressed; // space key for jumping
+    float mouseDeltax; // mouse movement delta
+    float mouseDeltay;
+    uint32_t sequence_number = 0; // sequence number for input events
+}; 
+
+void PushInputToWorld(WorldHandle world, CInputState* input);
 
 
 

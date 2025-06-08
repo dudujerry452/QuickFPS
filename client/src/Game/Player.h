@@ -44,7 +44,7 @@ class Player: virtual public Entity {
     uint32_t GetWeapon() const { return m_weapon; }
 
 
-
+    friend class World;
     friend std::unique_ptr<Entity> GetEntityFromState(util::EntityState state);  
 
     protected:
@@ -56,11 +56,12 @@ class Player: virtual public Entity {
     uint32_t m_latestSeq; 
     unsigned char m_wasd[4]; // 0: no op; 1: press; 2: release
     unsigned char m_space; // space key for jumping
-
-
+    uint32_t m_lastTicks; 
 
     uint32_t m_health; 
     uint32_t m_weapon;
+
+
 
 };
 
@@ -95,7 +96,6 @@ class LocalPlayer: virtual public Player{
 
     private: 
     std::deque<std::pair<util::InputState, uint32_t> > m_inputQueue;
-    uint32_t m_lastTicks; 
     private: 
 
 };

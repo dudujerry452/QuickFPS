@@ -32,7 +32,6 @@ typedef struct _PInputState {
     uint32_t sequence_number;
 } PInputState;
 
-/* 嵌套的 Vector3 定义保持不变 */
 typedef struct _PEntityState_Vector3 {
     float x;
     float y;
@@ -51,25 +50,20 @@ typedef struct _PEntityState {
     PEntityState_Vector3 forward;
     bool has_velocity;
     PEntityState_Vector3 velocity;
-    /* 【优化点 2】: 拆分 BoundingBox。
- 不再使用嵌套的 BoundingBox 消息，而是直接定义 min 和 max 两个 Vector3。
- 这使得 Protobuf 结构与你的原生 Raylib BoundingBox 结构完全匹配。
- (旧的 BoundingBox 定义已被移除) */
     bool has_bounding_box_min;
     PEntityState_Vector3 bounding_box_min;
     bool has_bounding_box_max;
     PEntityState_Vector3 bounding_box_max;
-    /* 【优化点 3】: 重新编号后续字段。
- 因为我们用字段 7 替换了原来的字段 6，所以后续字段需要顺延。 */
     bool has_pos_point;
     PEntityState_Vector3 pos_point;
     bool is_player;
     uint32_t seq_num;
     uint32_t health;
-    uint32_t weapon; /* 原来是 11，现在改为 12 */
+    uint32_t weapon;
     pb_size_t wasd_count;
     bool wasd[4];
     bool space;
+    uint32_t lastticks;
 } PEntityState;
 
 /* -------------------
@@ -97,13 +91,13 @@ extern "C" {
 /* Initializer values for message structs */
 #define PInputState_init_default                 {0, 0, {0, 0, 0, 0}, 0, false, PInputState_Vector2_init_default, 0}
 #define PInputState_Vector2_init_default         {0, 0}
-#define PEntityState_init_default                {0, 0, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0}
+#define PEntityState_init_default                {0, 0, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0, 0}
 #define PEntityState_Vector3_init_default        {0, 0, 0}
 #define EntityStateBatch_init_default            {0, {PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default}}
 #define GameMessage_init_default                 {0, {PInputState_init_default}}
 #define PInputState_init_zero                    {0, 0, {0, 0, 0, 0}, 0, false, PInputState_Vector2_init_zero, 0}
 #define PInputState_Vector2_init_zero            {0, 0}
-#define PEntityState_init_zero                   {0, 0, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0}
+#define PEntityState_init_zero                   {0, 0, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0, 0}
 #define PEntityState_Vector3_init_zero           {0, 0, 0}
 #define EntityStateBatch_init_zero               {0, {PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero}}
 #define GameMessage_init_zero                    {0, {PInputState_init_zero}}
@@ -133,6 +127,7 @@ extern "C" {
 #define PEntityState_weapon_tag                  12
 #define PEntityState_wasd_tag                    13
 #define PEntityState_space_tag                   14
+#define PEntityState_lastticks_tag               15
 #define EntityStateBatch_entity_state_tag        1
 #define GameMessage_input_state_tag              1
 #define GameMessage_entity_state_batch_tag       2
@@ -168,7 +163,8 @@ X(a, STATIC,   SINGULAR, UINT32,   seq_num,          10) \
 X(a, STATIC,   SINGULAR, UINT32,   health,           11) \
 X(a, STATIC,   SINGULAR, UINT32,   weapon,           12) \
 X(a, STATIC,   REPEATED, BOOL,     wasd,             13) \
-X(a, STATIC,   SINGULAR, BOOL,     space,            14)
+X(a, STATIC,   SINGULAR, BOOL,     space,            14) \
+X(a, STATIC,   SINGULAR, UINT32,   lastticks,        15)
 #define PEntityState_CALLBACK NULL
 #define PEntityState_DEFAULT NULL
 #define PEntityState_position_MSGTYPE PEntityState_Vector3
@@ -215,11 +211,11 @@ extern const pb_msgdesc_t GameMessage_msg;
 #define GameMessage_fields &GameMessage_msg
 
 /* Maximum encoded size of messages (where known) */
-#define EntityStateBatch_size                    2860
+#define EntityStateBatch_size                    2980
 #define GAMEDATA_PB_H_MAX_SIZE                   GameMessage_size
-#define GameMessage_size                         2863
+#define GameMessage_size                         2983
 #define PEntityState_Vector3_size                15
-#define PEntityState_size                        140
+#define PEntityState_size                        146
 #define PInputState_Vector2_size                 10
 #define PInputState_size                         54
 

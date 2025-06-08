@@ -135,6 +135,8 @@ util::EntityState FromNanopb(const PEntityState& nanopbEntityState) {
     memcpy(&nativeState.wasd, &nanopbEntityState.wasd, sizeof(nanopbEntityState.wasd));
     nativeState.space = nanopbEntityState.space;
 
+    nativeState.lastticks = nanopbEntityState.lastticks;
+
     return nativeState;
 }
 
@@ -161,6 +163,8 @@ bool ToNanopb(const util::EntityState& nativeEntityState, PEntityState* outNanop
 
     memcpy(&outNanopbEntityState->wasd, &nativeEntityState.wasd, sizeof(nativeEntityState.wasd));
     outNanopbEntityState->space = nativeEntityState.space;
+
+    outNanopbEntityState->lastticks = nativeEntityState.lastticks;
 
     return true;
 }
