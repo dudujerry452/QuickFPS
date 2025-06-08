@@ -115,7 +115,9 @@ void Player::UpdateByInput() {
     }
 }
 
-LocalPlayer::LocalPlayer() {
+LocalPlayer::LocalPlayer():
+Entity(), 
+Player() {
     m_entityType = EntityType::LocalPlayer;
     m_lastTicks = 0;
 }
