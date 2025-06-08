@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 project(QuickFPS)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(GENERATE_PROTO_TOGETHER ON)
+set(GENERATE_PROTO_TOGETHER OFF)
 set(CMAKE_BUILD_TYPE Debug)
 
 message(STATUS "Current System Name: ${CMAKE_SYSTEM_NAME}")
@@ -36,6 +36,7 @@ add_subdirectory(lib/spdlog)
 # -------------Public Includes --------------------
 include_directories(lib/spdlog/include)
 include_directories(lib/concurrentqueue/include)
+add_compile_definitions(SPDLOG_COMPILED_LIB)
 
 
 # -------------Game Logic --------------------

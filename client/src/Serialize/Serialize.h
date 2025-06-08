@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdint>
 #include <optional> // C++17 特性, 保持不变
+#include <variant>
 
 namespace serialization {
 

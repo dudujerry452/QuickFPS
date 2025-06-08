@@ -12,7 +12,7 @@ package wldlib
 
 
 // Windows (MinGW) LDFLAGS (无 Raylib, 保留，以备跨平台):
-// #cgo windows LDFLAGS: -L. -lGameLogic -lwldcapi -lspdlogd -pthread
+#cgo windows LDFLAGS: -L. -lwldcapi -lGameLogic  -lSerialize -lspdlogd -lstdc++ -pthread
 
 
 #include "c_api.h"

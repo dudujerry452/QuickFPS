@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <vector>
 #include <functional>
+#include <string>
+#include <optional>
+#include <chrono>
 
 class Network; 
 using MessageHandler = std::function<void(const uint8_t*, size_t)>;  // 回调

@@ -4,6 +4,7 @@
 #include "asio.hpp"
 #include <atomic> 
 #include <cstdio>
+#include <optional>
 
 #include "spdlog/spdlog.h"
 
