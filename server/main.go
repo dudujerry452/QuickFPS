@@ -32,8 +32,10 @@ package main
 // }
 
 import (
+	"bufio"
 	"log"
 	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -83,8 +85,31 @@ func main() {
 	defer state.world.Destroy()
 	log.Println("游戏世界创建成功。")
 
+	// --- 读取网络参数 ---
+	// read ip and port from ser_config file
+	// first line is IP address, and second line is port number
+	// this is code to read the pars from file :
+	log.Println("正在从ser_config读取IP地址和端口...")
+	ip := "0.0.0.0"
+	port := "1077"
+	ipFile, err := os.Open("ser_config")
+	if err != nil {
+		log.Fatalf("找不到ser_config文件. 使用默认配置")
+	}
+	defer ipFile.Close()
+
+	// --- 读取IP地址 ---
+	scanner := bufio.NewScanner(ipFile)
+	if scanner.Scan() {
+		ip = scanner.Text()
+	}
+	if scanner.Scan() {
+		port = scanner.Text()
+	}
+	log.Printf("IP地址：%s，端口：%s", ip, port)
+
 	// --- 初始化网络 ---
-	addr, err := net.ResolveUDPAddr("udp", "0.0.0.0:1077")
+	addr, err := net.ResolveUDPAddr("udp", ip+":"+port)
 	if err != nil {
 		log.Fatalf("无法解析地址: %v", err)
 	}

@@ -12,6 +12,7 @@
 
 #include "spdlog/spdlog.h"
 #include <iostream>
+#include <fstream>
 
 #define MAX_COLUMNS 20
 
@@ -70,7 +71,20 @@ int main(void)
     SetTargetFPS(60);                   
     //--------------------------------------------------------------------------------------
 
-    Nstart(network, (char*)"127.0.0.1", 1077);
+    // read ip and port from cli_config file 
+    // first line is IP address, and second line is port number
+    std::string ip = "127.0.0.1";
+    std::string port = "1077";
+    std::ifstream config_file("cli_config");
+    if(!config_file.is_open()) {
+        spdlog::info("not find config file, use default settings");
+    } else {
+        std::getline(config_file, ip);
+        std::getline(config_file, port);
+        config_file.close();
+    }
+
+    Nstart(network, ip , std::stoi(port));
     uint32_t ret = PtryHandshake(network, g_world);
 
     // -------Local Operation -----------------

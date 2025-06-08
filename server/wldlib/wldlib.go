@@ -20,7 +20,6 @@ package wldlib
 */
 import "C"
 import (
-	"log"
 	"unsafe"
 )
 
@@ -123,7 +122,6 @@ func (w *World) PushInput(input *InputState) {
 	// 2. 拷贝wasd_pressed数组
 	for i := 0; i < 4; i++ {
 		cInput.wasd_pressed[i] = C.uchar(input.WasdPressed[i])
-		log.Printf("wasd_pressed[%d]: %d", i, input.WasdPressed[i])
 	}
 
 	// 3. 调用底层的C函数

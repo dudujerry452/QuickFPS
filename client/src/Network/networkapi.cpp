@@ -13,7 +13,7 @@ void NdestroyNetworkHandle(NetworkHandle handle) {
     }
 }
 
-void Nstart(NetworkHandle handle, char* serverAddress, uint16_t port) {
+void Nstart(NetworkHandle handle, std::string serverAddress, uint16_t port) {
     if (handle) {
         static_cast<Network*>(handle)->start(serverAddress, port);
     }
