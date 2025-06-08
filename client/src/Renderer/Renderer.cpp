@@ -38,7 +38,7 @@ void Renderer::Render() {
             for(auto& ent : m_frontBuffer->entities) {
                 if(ent.IsError()) continue;
                 DrawLine3D(ent.GetPos(), ent.GetPos() + ent.GetForward(), RED);
-                if(ent.GetType() == Entity::EntityType::LocalPlayer) {
+                if(ent.GetType() == Entity::EntityType::Player) {
                     RenderAABB(ent.GetGlobalBoundingBox(), BLUE);
                 }
             }

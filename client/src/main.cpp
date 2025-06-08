@@ -30,6 +30,21 @@ void LocalInit() {
     auto ob = g_world->AddEntity(std::move(std::make_unique<Entity>(obs)));
     g_world->InitLocalPlayer(500);
     g_world->Attach();
+
+    auto player = std::make_unique<Player>();
+    g_world->AddEntity(std::move(player));
+    auto player2 = std::make_unique<Player>();
+    g_world->AddEntity(std::move(player2));
+
+    g_world->WorldUpdate();
+    auto updater = g_world->GetUpdater();
+    spdlog::debug("front size = {}", updater.size()); 
+    auto binary = serialization::serialize(updater);
+    auto bac = serialization::deserialize(*binary);
+    auto batch =  std::get<std::vector<util::EntityState>>(*bac);
+
+    spdlog::debug("back size = {}", batch.size());
+    
 }
 
 //------------------------------------------------------------------------------------
@@ -55,13 +70,17 @@ int main(void)
     SetTargetFPS(60);                   
     //--------------------------------------------------------------------------------------
 
-    Nstart(network, (char*)"127.0.0.1", 8080);
+    Nstart(network, (char*)"127.0.0.1", 1077);
     uint32_t ret = PtryHandshake(network, g_world);
 
     // -------Local Operation -----------------
     if(ret != 0) {
         spdlog::info("Failed to handshake with server, use local init");
         LocalInit(); 
+    } else {
+        spdlog::info("Handshake with server success");
+        Nset_handler(network, HandleNetworkMessage);
+        // LocalInit(); // temp
     }
 
     auto& world = *g_world;
@@ -85,7 +104,8 @@ int main(void)
         auto input = IM.Pop();
         input.player_id = localplaer;
         if(input.sequence_number) {
-            world.PushInput(input);
+            // world.PushInput(input);
+            spdlog::debug("send input : ({}, {}, {}, {}, {}, {})", input.wasd_pressed[0], input.wasd_pressed[1], input.wasd_pressed[2], input.wasd_pressed[3], input.space_pressed, input.sequence_number);
             auto bs = serialization::serialize(input);
             if(!bs.has_value()) {
                 spdlog::error("Failed to serialize input");

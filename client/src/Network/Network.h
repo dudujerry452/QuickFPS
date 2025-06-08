@@ -79,7 +79,7 @@ class Network {
                     asio::buffer(*data), 
                     [this, data](const asio::error_code& error, std::size_t) {
                         if(error) {
-                            spdlog::error("Failed to send message: {}", error.message());
+                            spdlog::trace("Failed to send message: {}", error.message());
                         } else {
                             // spdlog::info("Message sent successfully");
                         }

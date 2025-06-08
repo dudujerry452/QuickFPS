@@ -49,6 +49,7 @@ class World {
     uint32_t AddEntity(std::unique_ptr<Entity>&& obj_ptr);
     bool AddEntity(std::unique_ptr<Entity>&& obj_ptr, uint32_t obj_id);
     bool DelObject(uint32_t obj_id);
+    uint32_t GetEntityNum() const { return m_entities.size(); }
 
     // player set & get
     // void SetLocalPlayer(uint32_t player_id) {
@@ -101,13 +102,13 @@ class World {
 
     std::mutex m_stateMutex;
     bool i_isStateConsumed;
-    std::vector<std::unique_ptr<Entity> > m_EntitiesBufferA, m_EntitiesBufferB;
-    std::vector<std::unique_ptr<Entity> > *m_EntitiesBufferFront, *m_EntitiesBufferBack;
+    std::vector<util::EntityState > m_EntitiesBufferA, m_EntitiesBufferB;
+    std::vector<util::EntityState > *m_EntitiesBufferFront, *m_EntitiesBufferBack;
 
 
     std::mutex m_updaterMutex;
-    std::vector<std::unique_ptr<Entity> > m_UpdaterBufferA, m_UpdaterBufferB;
-    std::vector<std::unique_ptr<Entity> > *m_UpdaterBufferFront, *m_UpdaterBufferBack;
+    std::vector<util::EntityState > m_UpdaterBufferA, m_UpdaterBufferB;
+    std::vector<util::EntityState > *m_UpdaterBufferFront, *m_UpdaterBufferBack;
     private: 
 
     // meta 

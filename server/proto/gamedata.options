@@ -1,0 +1,8 @@
+# 为 InputState.wasd_pressed 指定最大数量，
+# Nanopb 将会为它生成一个固定大小的数组而不是回调函数。
+PInputState.wasd_pressed    max_count: 4
+
+PEntityState.wasd      max_count: 4
+# 为 EntityStateBatch.entity_state 指定一个合理的最大值，
+# 比如一帧最多同步20个实体。这同样可以避免回调。
+EntityStateBatch.entity_state max_count: 20

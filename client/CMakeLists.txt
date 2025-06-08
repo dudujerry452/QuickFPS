@@ -182,6 +182,7 @@ else()
 endif()
 set(SPDLOG_LIB_SOURCE_PATH "${CMAKE_BINARY_DIR}/lib/spdlog/${SPDLOG_LIB_NAME}") # Adjust if spdlog outputs elsewhere
 set(GAMELOGIC_LIB_SOURCE_PATH "$<TARGET_FILE:GameLogic>") # Assuming GameLogic is built as a target
+set(SERIALIZE_LIB_SOURCE_PATH "$<TARGET_FILE:Serialize>") # Assuming GameLogic is built as a target
 set(WDLCAPI_LIB_SOURCE_PATH "$<TARGET_FILE:wldcapi>")
 # set(RAYLIB_LIB_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${RAYLIB_DIR}/lib/libraylib.a") # RAYLIB_DIR was defined earlier
 set(CAPI_HEADER_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/CAPI/c_api.h") # Assuming this is the correct path
@@ -191,6 +192,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SPDLOG_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/${SPDLOG_LIB_NAME}"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${WDLCAPI_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/libwldcapi.a"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${GAMELOGIC_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/libGameLogic.a"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SERIALIZE_LIB_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/libSerialize.a"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CAPI_HEADER_SOURCE_PATH}" "${GO_CGO_PACKAGE_DIR}/c_api.h"
     COMMENT "Copying CGO dependencies to ${GO_CGO_PACKAGE_DIR}"
     VERBATIM # Important for proper command quoting and execution

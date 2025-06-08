@@ -14,6 +14,7 @@ void WorldUpdate(WorldHandle world);
 
 // runtime player -------------------
 uint32_t AddPlayer(WorldHandle world); // return player id 
+unsigned char AddPlayerByID(WorldHandle world, uint32_t player_id);
 void RemovePlayer(WorldHandle world, uint32_t player_id); // return 0 if success, else error code
 void SetPlayerPosition(WorldHandle world, uint32_t player_id, 
                              float pos_x, float pos_y, float pos_z);
@@ -28,17 +29,17 @@ void SetPlayerHealth(WorldHandle world, uint32_t player_id, uint32_t health);
 void SetPlayerWeapon(WorldHandle world, uint32_t player_id, uint32_t weapon);
 
 // data export -----------------------
-
+uint32_t GetEntityNumber(WorldHandle world);
 int GetAllEntitiesState(WorldHandle world, uint8_t** out_data, uint32_t* out_size); 
 
-struct CInputState {
+typedef struct CInputState {
     uint32_t player_id; 
     unsigned char wasd_pressed[4]; // 0: no op; 1: press; 2: release 
     unsigned char space_pressed; // space key for jumping
     float mouseDeltax; // mouse movement delta
     float mouseDeltay;
-    uint32_t sequence_number = 0; // sequence number for input events
-}; 
+    uint32_t sequence_number; // sequence number for input events
+} CInputState; 
 
 void PushInputToWorld(WorldHandle world, CInputState* input);
 

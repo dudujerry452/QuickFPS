@@ -2,6 +2,11 @@
 #include "../Game/World.h"
 #include "../Serialize/Serialize.h"
 
+#include "spdlog/spdlog.h"
+#include <iostream>
+
+#include <vector>
+
 WorldHandle CreateWorld() {
     auto world = new World();
     return reinterpret_cast<WorldHandle>(world);
@@ -20,6 +25,12 @@ uint32_t AddPlayer(WorldHandle world) {
     auto player = std::make_unique<Player>();
     uint32_t id = w->AddEntity(std::move(player));
     return id;
+}
+
+unsigned char AddPlayerByID(WorldHandle world, uint32_t player_id) {
+    auto w = reinterpret_cast<World*>(world);
+    auto player = std::make_unique<Player>();
+    return w->AddEntity(std::move(player), player_id);
 }
 void RemovePlayer(WorldHandle world, uint32_t player_id) {
     auto w = reinterpret_cast<World*>(world);
@@ -82,25 +93,32 @@ void SetPlayerWeapon(WorldHandle world, uint32_t player_id, uint32_t weapon) {
 }
 
 
+uint32_t GetEntityNumber(WorldHandle world) {
+    auto w = reinterpret_cast<World*>(world);
+    std::cout << w << std::endl;
+    return w->GetEntityNum();
+}
 int GetAllEntitiesState(WorldHandle world, uint8_t** out_data, uint32_t* out_size) {
+
+
     auto w = reinterpret_cast<World*>(world);
     auto ent_list = w->GetUpdater(); 
     auto bs = serialization::serialize(ent_list); 
     if(!bs.has_value()) {
-        return 1; // error code 
+        return 0; // error code 
     }
     auto& b = bs.value();
 
     *out_data = (uint8_t*)malloc(b.size());
     if(*out_data == nullptr) {
         *out_size = 0;
-        return 2;
+        return 0;
     }
 
     memcpy(*out_data, b.data(), b.size());
     *out_size = b.size();
     
-    return 0; //SUCCESS
+    return ent_list.size(); //SUCCESS
 }
 
 util::InputState InputConvert(CInputState* input) {

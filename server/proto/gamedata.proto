@@ -1,0 +1,90 @@
+// gamedata.proto 
+
+syntax = "proto3";
+
+
+// 这是为 Go 语言添加的选项
+package gamedata;
+option go_package = "github.com/yourname/quickfps/pb";
+
+// 包声明保持不变，这是一个好习惯
+// package your_game_name;
+
+// -------------------
+//    InputState
+// -------------------
+message PInputState {
+  uint32 player_id = 1;
+
+  // 【优化点 1】: 将 repeated 字段改为固定大小的数组。
+  // 这需要在 .options 文件中配合 max_count:4 使用。
+  // 这避免了使用复杂的 pb_callback_t，可以直接进行数组拷贝。
+  repeated uint32 wasd_pressed = 2;
+
+  uint32 space_pressed = 3;
+
+  // 嵌套的 Vector2 定义保持不变
+  message Vector2 {
+    float x = 1;
+    float y = 2;
+  }
+  Vector2 mouseDelta = 4;
+
+  uint32 sequence_number = 5;
+}
+
+// -------------------
+//   EntityState
+// -------------------
+message PEntityState {
+  uint32 id = 1;
+  bool is_error = 2;
+
+  message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+  }
+
+  Vector3 position = 3;
+  Vector3 forward = 4;
+  Vector3 velocity = 5;
+
+  Vector3 bounding_box_min = 6;
+  Vector3 bounding_box_max = 7;
+  
+  Vector3 pos_point = 8;
+  bool is_player = 9;
+  uint32 seq_num = 10;
+  uint32 health = 11;
+  uint32 weapon = 12; 
+  repeated bool wasd = 13; 
+  bool space = 14;
+  uint32 lastticks = 15;
+}
+
+message ClientHello {
+  uint32 code = 1; 
+}
+message ServerHello {
+  uint32 code = 1; 
+  uint32 playerid = 2;
+}
+
+
+// -------------------
+// EntityStateBatch
+// -------------------
+// 这个消息用于一次性发送多个实体状态，保持不变。
+message EntityStateBatch {
+  repeated PEntityState entity_state = 1; 
+}
+
+message GameMessage {
+  oneof payload {
+    PInputState input_state = 1;
+    EntityStateBatch entity_state_batch = 2;
+    ClientHello chello = 3;
+    ServerHello shello = 4;
+  }
+}

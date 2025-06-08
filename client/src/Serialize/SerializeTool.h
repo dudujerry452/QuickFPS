@@ -4,6 +4,8 @@
 #include "c_protos/gamedata.pb.h"
 #include "../Util/Util.h"
 
+#include "spdlog/spdlog.h"  
+
 #include <vector> 
 #include <cstdint>
 
@@ -88,10 +90,10 @@ bool ToNanopb(const util::InputState& nativeInputState, PInputState* outNanopbIn
         if (outNanopbInputState->wasd_pressed_count >= wasd_max_count_in_proto) {
             break; // Stop if we've reached the nanopb array's capacity
         }
-        outNanopbInputState->wasd_pressed[outNanopbInputState->wasd_pressed_count++] = nativeInputState.wasd_pressed[i] ? 1 : 0;
+        outNanopbInputState->wasd_pressed[outNanopbInputState->wasd_pressed_count++] = nativeInputState.wasd_pressed[i];
     }
 
-    outNanopbInputState->space_pressed = nativeInputState.space_pressed ? 1 : 0;
+    outNanopbInputState->space_pressed = nativeInputState.space_pressed;
 
     outNanopbInputState->has_mouseDelta = true; // Assume we always provide mouseDelta
     ToNanopb(nativeInputState.mouseDelta, &outNanopbInputState->mouseDelta);

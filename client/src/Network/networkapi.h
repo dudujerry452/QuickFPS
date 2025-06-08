@@ -27,6 +27,7 @@ std::optional<std::vector<uint8_t>> Nreceive_blocking(NetworkHandle handle, std:
 // protocol implementation ---------------------------
 
 class World;
-uint32_t PtryHandshake(NetworkHandle handle, World* world);
+uint32_t PtryHandshake(NetworkHandle handle, World*& world);
+void HandleNetworkMessage(const uint8_t* data, size_t size); 
 
 #endif

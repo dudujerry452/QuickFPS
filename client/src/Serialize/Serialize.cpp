@@ -83,6 +83,26 @@ std::optional<std::vector<uint8_t>> serialize(const util::ClientHello& nativeHel
     return buffer;
 }
 
+std::optional<std::vector<uint8_t>> serialize(const util::ServerHello& nativeHello) {
+    GameMessage gamemsg = GameMessage_init_zero; 
+
+    if (!ToNanopb(nativeHello, &gamemsg.payload.shello)) {
+        return std::nullopt;
+    }
+
+    gamemsg.which_payload = GameMessage_shello_tag;
+
+    std::vector<uint8_t> buffer(GameMessage_size);
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer.data(), buffer.size());
+
+    if (!pb_encode(&stream, GameMessage_fields, &gamemsg)) {
+        return std::nullopt;
+    }
+
+    buffer.resize(stream.bytes_written);
+    return buffer;
+}
+
 deserialized_result deserialize(const std::vector<uint8_t>& data) {
     if (data.empty()) {
         return std::nullopt;
