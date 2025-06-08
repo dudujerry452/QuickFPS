@@ -104,8 +104,8 @@ int main(void)
         auto input = IM.Pop();
         input.player_id = localplaer;
         if(input.sequence_number) {
-            // world.PushInput(input);
-            spdlog::debug("send input : ({}, {}, {}, {}, {}, {})", input.wasd_pressed[0], input.wasd_pressed[1], input.wasd_pressed[2], input.wasd_pressed[3], input.space_pressed, input.sequence_number);
+            if(localplaer)
+                world.PushInput(input);
             auto bs = serialization::serialize(input);
             if(!bs.has_value()) {
                 spdlog::error("Failed to serialize input");
@@ -132,6 +132,12 @@ int main(void)
                 world.PrepareState(updater); 
             }
 
+        }
+        if(IsKeyPressed(KEY_G)) {
+            EnableCursor();
+        }
+        if(IsKeyPressed(KEY_H)) {
+            DisableCursor();
         }
     }
 

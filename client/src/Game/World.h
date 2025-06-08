@@ -66,6 +66,9 @@ class World {
     void WorldPhysicsUpdate(); 
     void WorldAnimeUpdate();
 
+    bool ApplyInputs();
+    bool ApplyUpdater();
+
     void SetFPS(uint32_t fps); 
     void UpdateFPS(uint32_t duration);
     uint32_t GetFPS();
@@ -107,6 +110,7 @@ class World {
 
 
     std::mutex m_updaterMutex;
+    bool i_isUpdaterConsumed;
     std::vector<util::EntityState > m_UpdaterBufferA, m_UpdaterBufferB;
     std::vector<util::EntityState > *m_UpdaterBufferFront, *m_UpdaterBufferBack;
     private: 

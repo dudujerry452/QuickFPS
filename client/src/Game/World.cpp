@@ -79,6 +79,7 @@ m_UpdaterBufferBack(&m_UpdaterBufferB)
     m_FPS = 0;
 
     i_isStateConsumed = true;
+    i_isUpdaterConsumed = true;
     ProvideUpdater();
 }
 
@@ -131,34 +132,9 @@ void World::InitLocalPlayer(uint32_t player_id) {
 
 void World::WorldUpdate() { 
 
-    // handle input with concurrent queue
-    std::vector<util::InputState> inputs;
-    int size = m_inputQueue.try_dequeue_bulk(
-        std::back_inserter(inputs), 1000
-    );
-    if(size > 0) {
-        for(const auto& input: inputs) {
-            auto ent = GetEntity(input.player_id);
-            if(!ent) continue; // not exists
-            auto player = dynamic_cast<Player*>(ent);
-            if(!player) {
-                spdlog::error("World::WorldPhysicsUpdate: Entity is not a Player: {}", input.player_id);
-                continue; // not player
-            }
-            player->PushNewInput(input);
-        }
-    }
 
-    if(m_localPlayer) {
-        std::lock_guard<std::mutex> lock(m_stateMutex);
-        m_entities.clear(); 
-        for(auto& state: *m_EntitiesBufferFront) {
-            auto ptr = GetEntityFromState(state);
-            auto id = ptr->GetID(); 
-            AddEntity(std::move(ptr), id);
-        }
-        
-    }
+    bool apply0 = ApplyInputs();
+    bool apply1 = ApplyUpdater();
 
     // normal logics
 
@@ -201,6 +177,43 @@ void World::WorldAnimeUpdate() {
     for(auto& [id, ent]: m_entities) {
         ent->AnimeUpdate();
     }
+}
+
+bool World::ApplyInputs() {
+    std::vector<util::InputState> inputs;
+    int size = m_inputQueue.try_dequeue_bulk(
+        std::back_inserter(inputs), 1000
+    );
+    if(size > 0) {
+        for(const auto& input: inputs) {
+            auto ent = GetEntity(input.player_id);
+            if(!ent) continue; // not exists
+            auto player = dynamic_cast<Player*>(ent);
+            if(!player) {
+                spdlog::error("World::WorldPhysicsUpdate: Entity is not a Player: {}", input.player_id);
+                continue; // not player
+            }
+            player->PushNewInput(input);
+        }
+        return true;
+    }
+    return false;
+}
+
+bool World::ApplyUpdater() {
+    if(m_localPlayer) {
+        std::lock_guard<std::mutex> lock(m_stateMutex);
+        if(i_isStateConsumed) return false;
+
+        m_entities.clear(); 
+        for(auto& state: *m_EntitiesBufferFront) {
+            auto ptr = GetEntityFromState(state);
+            auto id = ptr->GetID(); 
+            AddEntity(std::move(ptr), id);
+        }
+        i_isStateConsumed = true;
+    }
+    return true;
 }
 
 void World::SetFPS(uint32_t fps) {
@@ -284,6 +297,7 @@ void World::ProvideUpdater() { // after thread start, it is always ready to prov
     {
         std::lock_guard<std::mutex> lock(m_updaterMutex);
         std::swap(m_UpdaterBufferFront, m_UpdaterBufferBack); // swap front and back buffer
+        i_isUpdaterConsumed = false;
     }
     m_UpdaterBufferBack->clear(); // clear back buffer
 }

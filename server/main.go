@@ -188,6 +188,8 @@ func gameLoop(conn *net.UDPConn, commandChan <-chan Command) {
 		//log.Printf("[%d] 正在调用 state.world.Update()...", frameCount)
 		// updateStartTime := time.Now()
 		state.world.Update()
+		state.world.Update()
+		state.world.Update()
 		// updateDuration := time.Since(updateStartTime)
 		//log.Printf("[%d] state.world.Update() 完成, 耗时: %s", frameCount, updateDuration)
 		// 如果 updateDuration 特别长 (比如超过 tickInterval)，说明这里可能存在问题。
