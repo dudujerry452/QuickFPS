@@ -58,6 +58,14 @@ message PEntityState {
   uint32 lastticks = 15;
 }
 
+message ClientHello {
+  uint32 code = 1; 
+}
+message ServerHello {
+  uint32 code = 1; 
+  uint32 playerid = 2;
+}
+
 
 // -------------------
 // EntityStateBatch
@@ -71,5 +79,7 @@ message GameMessage {
   oneof payload {
     PInputState input_state = 1;
     EntityStateBatch entity_state_batch = 2;
+    ClientHello chello = 3;
+    ServerHello shello = 4;
   }
 }

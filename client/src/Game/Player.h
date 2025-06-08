@@ -71,6 +71,7 @@ class LocalPlayer: virtual public Player{
     public: 
 
     LocalPlayer();
+    LocalPlayer(const Entity& entity);
     LocalPlayer(const Player& player); 
     ~LocalPlayer() override {}
 

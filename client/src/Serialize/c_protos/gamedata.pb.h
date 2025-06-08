@@ -66,6 +66,15 @@ typedef struct _PEntityState {
     uint32_t lastticks;
 } PEntityState;
 
+typedef struct _ClientHello {
+    uint32_t code;
+} ClientHello;
+
+typedef struct _ServerHello {
+    uint32_t code;
+    uint32_t playerid;
+} ServerHello;
+
 /* -------------------
  EntityStateBatch
  -------------------
@@ -80,6 +89,8 @@ typedef struct _GameMessage {
     union {
         PInputState input_state;
         EntityStateBatch entity_state_batch;
+        ClientHello chello;
+        ServerHello shello;
     } payload;
 } GameMessage;
 
@@ -93,12 +104,16 @@ extern "C" {
 #define PInputState_Vector2_init_default         {0, 0}
 #define PEntityState_init_default                {0, 0, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, false, PEntityState_Vector3_init_default, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0, 0}
 #define PEntityState_Vector3_init_default        {0, 0, 0}
+#define ClientHello_init_default                 {0}
+#define ServerHello_init_default                 {0, 0}
 #define EntityStateBatch_init_default            {0, {PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default, PEntityState_init_default}}
 #define GameMessage_init_default                 {0, {PInputState_init_default}}
 #define PInputState_init_zero                    {0, 0, {0, 0, 0, 0}, 0, false, PInputState_Vector2_init_zero, 0}
 #define PInputState_Vector2_init_zero            {0, 0}
 #define PEntityState_init_zero                   {0, 0, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, false, PEntityState_Vector3_init_zero, 0, 0, 0, 0, 0, {0, 0, 0, 0}, 0, 0}
 #define PEntityState_Vector3_init_zero           {0, 0, 0}
+#define ClientHello_init_zero                    {0}
+#define ServerHello_init_zero                    {0, 0}
 #define EntityStateBatch_init_zero               {0, {PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero, PEntityState_init_zero}}
 #define GameMessage_init_zero                    {0, {PInputState_init_zero}}
 
@@ -128,9 +143,14 @@ extern "C" {
 #define PEntityState_wasd_tag                    13
 #define PEntityState_space_tag                   14
 #define PEntityState_lastticks_tag               15
+#define ClientHello_code_tag                     1
+#define ServerHello_code_tag                     1
+#define ServerHello_playerid_tag                 2
 #define EntityStateBatch_entity_state_tag        1
 #define GameMessage_input_state_tag              1
 #define GameMessage_entity_state_batch_tag       2
+#define GameMessage_chello_tag                   3
+#define GameMessage_shello_tag                   4
 
 /* Struct field encoding specification for nanopb */
 #define PInputState_FIELDLIST(X, a) \
@@ -181,6 +201,17 @@ X(a, STATIC,   SINGULAR, FLOAT,    z,                 3)
 #define PEntityState_Vector3_CALLBACK NULL
 #define PEntityState_Vector3_DEFAULT NULL
 
+#define ClientHello_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   code,              1)
+#define ClientHello_CALLBACK NULL
+#define ClientHello_DEFAULT NULL
+
+#define ServerHello_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   code,              1) \
+X(a, STATIC,   SINGULAR, UINT32,   playerid,          2)
+#define ServerHello_CALLBACK NULL
+#define ServerHello_DEFAULT NULL
+
 #define EntityStateBatch_FIELDLIST(X, a) \
 X(a, STATIC,   REPEATED, MESSAGE,  entity_state,      1)
 #define EntityStateBatch_CALLBACK NULL
@@ -189,16 +220,22 @@ X(a, STATIC,   REPEATED, MESSAGE,  entity_state,      1)
 
 #define GameMessage_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,input_state,payload.input_state),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,entity_state_batch,payload.entity_state_batch),   2)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,entity_state_batch,payload.entity_state_batch),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,chello,payload.chello),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,shello,payload.shello),   4)
 #define GameMessage_CALLBACK NULL
 #define GameMessage_DEFAULT NULL
 #define GameMessage_payload_input_state_MSGTYPE PInputState
 #define GameMessage_payload_entity_state_batch_MSGTYPE EntityStateBatch
+#define GameMessage_payload_chello_MSGTYPE ClientHello
+#define GameMessage_payload_shello_MSGTYPE ServerHello
 
 extern const pb_msgdesc_t PInputState_msg;
 extern const pb_msgdesc_t PInputState_Vector2_msg;
 extern const pb_msgdesc_t PEntityState_msg;
 extern const pb_msgdesc_t PEntityState_Vector3_msg;
+extern const pb_msgdesc_t ClientHello_msg;
+extern const pb_msgdesc_t ServerHello_msg;
 extern const pb_msgdesc_t EntityStateBatch_msg;
 extern const pb_msgdesc_t GameMessage_msg;
 
@@ -207,10 +244,13 @@ extern const pb_msgdesc_t GameMessage_msg;
 #define PInputState_Vector2_fields &PInputState_Vector2_msg
 #define PEntityState_fields &PEntityState_msg
 #define PEntityState_Vector3_fields &PEntityState_Vector3_msg
+#define ClientHello_fields &ClientHello_msg
+#define ServerHello_fields &ServerHello_msg
 #define EntityStateBatch_fields &EntityStateBatch_msg
 #define GameMessage_fields &GameMessage_msg
 
 /* Maximum encoded size of messages (where known) */
+#define ClientHello_size                         6
 #define EntityStateBatch_size                    2980
 #define GAMEDATA_PB_H_MAX_SIZE                   GameMessage_size
 #define GameMessage_size                         2983
@@ -218,6 +258,7 @@ extern const pb_msgdesc_t GameMessage_msg;
 #define PEntityState_size                        146
 #define PInputState_Vector2_size                 10
 #define PInputState_size                         54
+#define ServerHello_size                         12
 
 #ifdef __cplusplus
 } /* extern "C" */

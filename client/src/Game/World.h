@@ -43,18 +43,20 @@ class World {
     // set & get
     void SetMap(const Map& themap) { m_worldMap = themap; }
     Map GetMap() const {return m_worldMap; }
-    std::unique_ptr<Entity>& GetEntity(uint32_t obj_id);
+    Entity* GetEntity(uint32_t obj_id);
 
     // single thread 
     uint32_t AddEntity(std::unique_ptr<Entity>&& obj_ptr);
+    bool AddEntity(std::unique_ptr<Entity>&& obj_ptr, uint32_t obj_id);
     bool DelObject(uint32_t obj_id);
 
     // player set & get
-    void SetLocalPlayer(uint32_t player_id) {
-        assert(m_entities.find(player_id) != m_entities.end());
-        spdlog::debug("Set LocalPlayer: {}", player_id);
-        m_localPlayer = player_id;
-    }
+    // void SetLocalPlayer(uint32_t player_id) {
+    //     assert(m_entities.find(player_id) != m_entities.end());
+    //     spdlog::debug("Set LocalPlayer: {}", player_id);
+    //     m_localPlayer = player_id;
+    // }
+    void InitLocalPlayer(uint32_t player_id); 
     uint32_t GetLocalPlayer() const { return m_localPlayer; }
 
     // update related

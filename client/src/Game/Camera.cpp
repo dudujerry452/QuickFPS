@@ -12,16 +12,16 @@ WorldCamera::WorldCamera() {
 
 bool WorldCamera::Connect(World* world, uint32_t entity_id) {
     if(!world) return false;
-    auto& obj = world->GetEntity(entity_id);
-    if(obj->IsError()) return false;
+    auto obj = world->GetEntity(entity_id);
+    if(!obj) return false;
     m_world = world; 
     m_followId = entity_id;
     return true;
 }
 
 bool WorldCamera::Update() {
-    auto& obj = m_world->GetEntity(m_followId);
-    if(obj->IsError()) return false; // not exists
+    auto obj = m_world->GetEntity(m_followId);
+    if(!obj) return false; // not exists
 
     m_camera.position = obj->GetPos();
     m_camera.target = obj->GetPos() + obj->GetForward();

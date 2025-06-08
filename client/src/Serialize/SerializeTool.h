@@ -195,5 +195,29 @@ bool ToNanopb(const std::vector<util::EntityState>& nativeBatch, EntityStateBatc
     return true;
 }
 
+util::ClientHello FromNanopb(const ClientHello& nanopbClientHello) {
+    util::ClientHello nativeClientHello;
+    nativeClientHello.code = nanopbClientHello.code;
+    return nativeClientHello;
+}
+
+bool ToNanopb(const util::ClientHello& nativeClientHello, ClientHello* nanopbClientHello) {
+    nanopbClientHello->code = nativeClientHello.code;
+    return true;
+}
+
+util::ServerHello FromNanopb(const ServerHello& nanopbServerHello) {
+    util::ServerHello nativeServerHello;
+    nativeServerHello.code = nanopbServerHello.code;
+    nativeServerHello.playerid = nanopbServerHello.playerid;
+    return nativeServerHello;
+}
+
+bool ToNanopb(const util::ServerHello& nativeServerHello, ServerHello* nanopbServerHello) {
+    nanopbServerHello->code = nativeServerHello.code;
+    nanopbServerHello->playerid = nativeServerHello.playerid;
+    return true;
+}
+
 
 #endif 

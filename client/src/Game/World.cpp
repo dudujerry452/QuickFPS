@@ -69,9 +69,9 @@ m_UpdaterBufferBack(&m_UpdaterBufferB)
         m_worldMap.objects.push_back({colors[i], util::BoundingBox({positions[i], positions[i] + Vector3({2.0f, heights[i], 2.0f})})});
     }
 
-    auto ptr = std::make_unique<Entity>(); // GetEntity
-    ptr->SetError(1);
-    m_entities[0] = std::move(ptr);
+    // auto ptr = std::make_unique<Entity>(); // GetEntity
+    // ptr->SetError(1);
+    // m_entities[0] = std::move(ptr);
 
     SetFPS(60); // default fps = 60
     memset(m_FPS_duration, 0, sizeof(m_FPS_duration));
@@ -86,10 +86,10 @@ World::~World() {
     
 }
 
-std::unique_ptr<Entity>& World::GetEntity(uint32_t obj_id) { 
+Entity* World::GetEntity(uint32_t obj_id) { 
     if(m_entities.find(obj_id) != m_entities.end())
-        return m_entities[obj_id]; 
-    else return m_entities[0]; // return error entity
+        return m_entities[obj_id].get(); 
+    else return nullptr; // return error entity
 }
 
 uint32_t World::AddEntity(std::unique_ptr<Entity>&& obj_ptr) {
@@ -98,8 +98,35 @@ uint32_t World::AddEntity(std::unique_ptr<Entity>&& obj_ptr) {
     m_entities[id] = std::forward<decltype(obj_ptr)>(obj_ptr);
     return id;
 }
+bool World::AddEntity(std::unique_ptr<Entity>&& obj_ptr, uint32_t obj_id) {
+    if(GetEntity(obj_id)) return false;
+    obj_ptr->SetID(obj_id);
+    m_entities[obj_id] = std::forward<decltype(obj_ptr)>(obj_ptr);
+    return true;
+}
 bool World::DelObject(uint32_t obj_id) {
     return m_entities.erase(obj_id);
+}
+
+void World::InitLocalPlayer(uint32_t player_id) {
+    auto player = GetEntity(player_id);
+    m_localPlayer = player_id;
+    if(player) {
+        if(player->GetType() != Entity::EntityType::LocalPlayer) {
+            
+            auto lplayer = std::make_unique<LocalPlayer>(*(player));
+            DelObject(player_id);
+            AddEntity(std::move(lplayer));
+        } else {
+            return;
+        }
+    } else {
+        std::unique_ptr<LocalPlayer> lplayer = std::make_unique<LocalPlayer>();
+        AddEntity(std::move(lplayer), player_id);
+        auto newplayer = GetEntity(player_id);
+        newplayer->SetPos({0,1.5,4});
+        newplayer->SetForward({1,0,0});
+    }
 }
 
 void World::WorldUpdate() { 
@@ -111,9 +138,9 @@ void World::WorldUpdate() {
     );
     if(size > 0) {
         for(const auto& input: inputs) {
-            auto& ent = GetEntity(input.player_id);
-            if(ent->IsError()) continue; // not exists
-            auto player = dynamic_cast<Player*>(ent.get());
+            auto ent = GetEntity(input.player_id);
+            if(!ent) continue; // not exists
+            auto player = dynamic_cast<Player*>(ent);
             if(!player) {
                 spdlog::error("World::WorldPhysicsUpdate: Entity is not a Player: {}", input.player_id);
                 continue; // not player
@@ -122,6 +149,7 @@ void World::WorldUpdate() {
         }
     }
 
+    if(m_localPlayer) {
     // handle world state update 
     bool hasstateupdate = false;
     uint32_t last_ticks = 0, rlast_ticks = 0;
@@ -186,7 +214,7 @@ void World::WorldUpdate() {
     }
 
     if(hasstateupdate) {
-        auto her= dynamic_cast<LocalPlayer*>(GetEntity(m_localPlayer).get());
+        auto her= dynamic_cast<LocalPlayer*>(GetEntity(m_localPlayer));
         auto que = her->m_inputQueue;
         if(!que.empty()) {
             uint32_t oldest_ticks = que.front().second; 
@@ -217,6 +245,20 @@ void World::WorldUpdate() {
             WorldPhysicsUpdate();
             WorldAnimeUpdate(); 
         }
+    }
+    }
+
+    else {
+    m_entities.clear(); // clear all entities
+    for(auto& ent: *m_EntitiesBufferFront) {
+        // TODO: 增量式更新 
+        if(!ent) continue; 
+        uint32_t id = ent->GetID();
+        spdlog::debug("id = {}", id);
+        if(id == 0) continue; 
+    }
+
+
     }
 
     // normal logics
@@ -249,10 +291,12 @@ void World::WorldPhysicsUpdate() {
     Physics::UpdatePhysicalWorld(*this);
 }
 void World::WorldAnimeUpdate() {
-    bool ret = m_camera.Update();
-    if(!ret) {
-        spdlog::error("Camera Update Failed!");
-        return;
+    if(m_localPlayer){
+        bool ret = m_camera.Update();
+        if(!ret) {
+            spdlog::error("Camera Update Failed!");
+            return;
+        }
     }
     
     for(auto& [id, ent]: m_entities) {
@@ -290,8 +334,7 @@ uint32_t World::GetFPS() {
 
 void World::Attach(uint32_t entity_id)
 { 
-    auto& obj = GetEntity(entity_id);
-    assert(!obj->IsError());
+    assert(GetEntity(entity_id));
     m_camera.Connect(this, entity_id);
 }
 

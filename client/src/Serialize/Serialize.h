@@ -18,10 +18,22 @@ std::optional<std::vector<uint8_t>> serialize(const util::InputState& nativeStat
  */
 std::optional<std::vector<uint8_t>> serialize(const std::vector<util::EntityState>& nativeBatch);
 
+/**
+ * @brief 将 util::ClientHello 对象序列化为二进制字节向量。
+ */
+std::optional<std::vector<uint8_t>> serialize(const util::ClientHello& nativeHello);
+
+/**
+ * @brief 将 util::ServerHello 对象序列化为二进制字节向量。
+ */
+std::optional<std::vector<uint8_t>> serialize(const util::ServerHello& nativeHello);
+
 using deserialized_result = std::optional<std::variant<
+    util::InputState, 
     std::vector<util::EntityState>,
-    util::InputState>
-    >;
+    util::ClientHello, 
+    util::ServerHello
+    > >;
 
 deserialized_result deserialize(const std::vector<uint8_t>& data);
 

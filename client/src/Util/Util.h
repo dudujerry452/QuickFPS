@@ -70,6 +70,14 @@ struct EntityState{
     uint32_t lastticks; 
 };
 
+struct ClientHello {
+    uint32_t code;
+};
+
+struct ServerHello {
+    uint32_t code;
+    uint32_t playerid;
+};
 
 
 // colors 

@@ -18,6 +18,12 @@ PB_BIND(PEntityState, PEntityState, AUTO)
 PB_BIND(PEntityState_Vector3, PEntityState_Vector3, AUTO)
 
 
+PB_BIND(ClientHello, ClientHello, AUTO)
+
+
+PB_BIND(ServerHello, ServerHello, AUTO)
+
+
 PB_BIND(EntityStateBatch, EntityStateBatch, 2)
 
 

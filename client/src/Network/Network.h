@@ -33,6 +33,7 @@ class Network {
     void setMessageHandler(MessageHandler handler) {
         m_onMessageRecv = std::move(handler);
     }
+    std::optional<std::vector<uint8_t>> receive_blocking(std::chrono::milliseconds timeout);
 
     private: 
 
@@ -50,7 +51,11 @@ class Network {
 
     // udp data
     MessageHandler m_onMessageRecv; 
-    std::array<uint8_t, 1500> m_recvBuffer; 
+    std::array<uint8_t, 1500> m_recvBuffer;
+    
+    // to support blocking
+    std::mutex m_blockingRecvMutex;
+    std::optional<std::promise<std::vector<uint8_t>>> m_blockingPromise;
     
 
     public: 
@@ -76,7 +81,7 @@ class Network {
                         if(error) {
                             spdlog::error("Failed to send message: {}", error.message());
                         } else {
-                            spdlog::info("Message sent successfully");
+                            // spdlog::info("Message sent successfully");
                         }
                     }
                 );

@@ -119,6 +119,11 @@ LocalPlayer::LocalPlayer() {
     m_entityType = EntityType::LocalPlayer;
     m_lastTicks = 0;
 }
+LocalPlayer::LocalPlayer(const Entity& entity) :
+Entity(entity)
+{ 
+    
+}
 
 LocalPlayer::LocalPlayer(const Player& player) :
 Entity(player),

@@ -147,36 +147,98 @@ void Network::stop() {
 
 }
 
+std::optional<std::vector<uint8_t>> Network::receive_blocking(std::chrono::milliseconds timeout) {
+
+    if (!m_running) {
+        spdlog::warn("Cannot block on receive, network is not running.");
+        return std::nullopt;
+    }
+
+    std::promise<std::vector<uint8_t>> promise;
+    auto future = promise.get_future();
+
+    // 注册 promise，以便 do_receive 可以找到它
+    {
+        std::lock_guard<std::mutex> lock(m_blockingRecvMutex);
+        // 为了简单起见，我们假设同一时间只有一个线程会调用此函数。
+        // 如果需要支持多个线程同时调用，需要一个 promise 队列。
+        if (m_blockingPromise.has_value()) {
+            spdlog::error("Another thread is already waiting for a blocking receive.");
+            // 立即抛出异常或返回空，取决于你的错误处理策略
+            throw std::runtime_error("Concurrent blocking receive is not supported.");
+        }
+        m_blockingPromise = std::move(promise);
+    }
+
+    spdlog::trace("Blocking receive waiting for message...");
+
+    // 等待 future
+    try {
+        if (future.wait_for(timeout) == std::future_status::ready) {
+            spdlog::trace("Blocking receive got message.");
+            return future.get(); // 获取数据
+        } else {
+            spdlog::trace("Blocking receive timed out.");
+            // 超时后，必须移除我们之前设置的 promise，否则它会一直存在
+            // 并且会捕获下一条本应异步处理的消息。
+            std::lock_guard<std::mutex> lock(m_blockingRecvMutex);
+            m_blockingPromise.reset();
+            return std::nullopt; // 返回空表示超时
+        }
+    } catch (const std::exception& e) {
+        // 如果 promise 被设置了异常 (例如在 stop() 中), 这里会捕获到
+        spdlog::warn("Blocking receive cancelled: {}", e.what());
+        return std::nullopt;
+    }
+}
+
 void Network::do_receive() {
-    // 使用async_receive，因为它用于"已连接"的UDP套接字
     m_socket.async_receive(
         asio::buffer(m_recvBuffer),
         [this](const asio::error_code& ec, std::size_t bytes_transferred) {
-            // 检查是否有错误
             if (!ec) {
-                spdlog::debug("Received {} bytes from server.", bytes_transferred);
-                
-                // 如果设置了回调函数，就调用它
-                if (m_onMessageRecv) {
-                    try {
-                        m_onMessageRecv(m_recvBuffer.data(), bytes_transferred);
-                    } catch (const std::exception& e) {
-                        spdlog::error("Exception in message handler: {}", e.what());
+                bool message_handled_by_blocker = false;
+
+                // 检查是否有阻塞调用在等待
+                {
+                    std::lock_guard<std::mutex> lock(m_blockingRecvMutex);
+                    if (m_blockingPromise.has_value()) {
+                        // 创建数据的副本
+                        std::vector<uint8_t> data_copy(m_recvBuffer.data(), m_recvBuffer.data() + bytes_transferred);
+                        
+                        // 满足 promise 并将其移除
+                        m_blockingPromise->set_value(std::move(data_copy));
+                        m_blockingPromise.reset();
+                        
+                        message_handled_by_blocker = true;
+                        spdlog::trace("Message delivered to blocking receiver.");
                     }
                 }
 
-                // 如果网络仍在运行，启动下一次接收
+                // 如果没有被阻塞调用处理，则使用常规的异步回调
+                if (!message_handled_by_blocker) {
+                    if (m_onMessageRecv) {
+                        try {
+                            spdlog::trace("Message delivered to async handler.");
+                            m_onMessageRecv(m_recvBuffer.data(), bytes_transferred);
+                        } catch (const std::exception& e) {
+                            spdlog::error("Exception in message handler: {}", e.what());
+                        }
+                    } else {
+                        spdlog::trace("Received message but no async or blocking handler was set.");
+                    }
+                }
+                
+                // 再次启动下一次接收
                 if (m_running) {
                     do_receive();
                 }
+
             } else {
-                // 如果操作被取消(通常是stop()导致的)，这是正常关闭流程的一部分
                 if (ec == asio::error::operation_aborted) {
-                    spdlog::info("Receive operation cancelled.");
-                } else {
+                    spdlog::info("Receive operation cancelled (network stopping).");
+                } else if(m_running) { // 只有在网络应该运行时才报告错误
                     spdlog::error("Receive error: {}", ec.message());
-                    // 在发生错误时可以决定是否停止网络
-                    // stop(); 
                 }
             }
         });

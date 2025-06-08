@@ -38,29 +38,6 @@ std::optional<std::vector<uint8_t>> serialize(const util::InputState& nativeStat
     return buffer;
 }
 
-deserialized_result deserialize(const std::vector<uint8_t>& data) {
-    if (data.empty()) {
-        return std::nullopt;
-    }
-
-    GameMessage nanopbMsg = GameMessage_init_zero;
-
-    pb_istream_t stream = pb_istream_from_buffer(data.data(), data.size());
-
-    if (!pb_decode(&stream, GameMessage_fields, &nanopbMsg)) {
-        return std::nullopt;
-    }
-
-    switch (nanopbMsg.which_payload) {
-        case GameMessage_entity_state_batch_tag:
-            return FromNanopb(nanopbMsg.payload.entity_state_batch);
-        case GameMessage_input_state_tag:
-            return FromNanopb(nanopbMsg.payload.input_state);
-        default:
-            return std::nullopt;
-    }
-}
-
 
 
 // ---- EntityStateBatch 序列化 / 反序列化 ----
@@ -84,6 +61,56 @@ std::optional<std::vector<uint8_t>> serialize(const std::vector<util::EntityStat
     buffer.resize(stream.bytes_written);
     return buffer;
 }
+
+
+std::optional<std::vector<uint8_t>> serialize(const util::ClientHello& nativeHello) {
+    GameMessage gamemsg = GameMessage_init_zero; 
+
+    if (!ToNanopb(nativeHello, &gamemsg.payload.chello)) {
+        return std::nullopt;
+    }
+
+    gamemsg.which_payload = GameMessage_chello_tag;
+
+    std::vector<uint8_t> buffer(GameMessage_size);
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer.data(), buffer.size());
+
+    if (!pb_encode(&stream, GameMessage_fields, &gamemsg)) {
+        return std::nullopt;
+    }
+
+    buffer.resize(stream.bytes_written);
+    return buffer;
+}
+
+deserialized_result deserialize(const std::vector<uint8_t>& data) {
+    if (data.empty()) {
+        return std::nullopt;
+    }
+
+    GameMessage nanopbMsg = GameMessage_init_zero;
+
+    pb_istream_t stream = pb_istream_from_buffer(data.data(), data.size());
+
+    if (!pb_decode(&stream, GameMessage_fields, &nanopbMsg)) {
+        return std::nullopt;
+    }
+
+    switch (nanopbMsg.which_payload) {
+        case GameMessage_entity_state_batch_tag:
+            return FromNanopb(nanopbMsg.payload.entity_state_batch);
+        case GameMessage_input_state_tag:
+            return FromNanopb(nanopbMsg.payload.input_state);
+        case GameMessage_chello_tag:
+            return FromNanopb(nanopbMsg.payload.chello);
+        case GameMessage_shello_tag:
+            return FromNanopb(nanopbMsg.payload.shello);
+        default:
+            return std::nullopt;
+    }
+}
+
+
 
 void test_print_bytes(const std::vector<uint8_t>& vec) {
     std::cout << "Binary Data (size: " << vec.size() << "): ";
@@ -142,6 +169,12 @@ void test_input_state_serialization() {
 
             std::cout << "InputState test PASSED!" << std::endl;
             std::cout << "Deserialized InputState" << std::endl;
+        },
+        [](const util::ClientHello& hello) {
+            std::cout << "Deserialized ClientHello" << std::endl;
+        },
+        [](const util::ServerHello& hello) {
+            std::cout << "Deserialized ServerHello" << std::endl;
         }
         };
         std::visit(visitor, val);
