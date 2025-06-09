@@ -84,18 +84,30 @@ int main(void)
         config_file.close();
     }
 
-    Nstart(network, ip , std::stoi(port));
-    uint32_t ret = PtryHandshake(network, g_world);
+    try {
+        spdlog::info("Attempting to start network services...");
+        Nstart(network, ip, std::stoi(port));
+        spdlog::info("Network services started successfully.");
 
-    // -------Local Operation -----------------
-    if(ret != 0) {
-        spdlog::info("Failed to handshake with server, use local init");
-        LocalInit(); 
-    } else {
-        spdlog::info("Handshake with server success");
-        Nset_handler(network, HandleNetworkMessage);
-        // LocalInit(); // temp
+        // 如果 Nstart 成功，才继续握手
+        uint32_t ret = PtryHandshake(network, g_world);
+
+        if (ret == 0) { // 假设 PtryHandshake 成功返回 0
+            spdlog::info("Handshake with server success");
+            Nset_handler(network, HandleNetworkMessage);
+        } else {
+            // 如果你希望握手失败也回退到本地模式，可以从这里抛出异常
+            throw std::runtime_error("Handshake with server failed.");
+        }
+
+    } catch (const std::exception& e) {
+        // 如果程序崩溃，它现在会进入这里，并打印出详细的错误信息
+        spdlog::critical("<<<<< CRITICAL ERROR >>>>> Failed to initialize network: {}", e.what());
+        
+        spdlog::info("Falling back to local mode due to network failure.");
+        LocalInit();
     }
+
 
     auto& world = *g_world;
     g_isRunning = true;

@@ -10,7 +10,6 @@ extern World* g_world;
 
 uint32_t client_code; 
 uint32_t  PtryHandshake(NetworkHandle handle, World*& world) {
-    client_code = rand();
 
     std::random_device rd;
     std::mt19937 gen(rd());

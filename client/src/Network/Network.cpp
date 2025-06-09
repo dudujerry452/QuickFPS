@@ -3,6 +3,7 @@
 
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include <stdexcept>
 
 // int xxxtest() {
 //     printf("--- Nanopb Sensor Example ---\n\n");
@@ -90,6 +91,7 @@
 
 void Network::start(const std::string& serverAddress, uint16_t port) {
     spdlog::info("Starting network with server {}:{}", serverAddress, port);
+    spdlog::debug("1");
     asio::ip::udp::resolver resolver(m_ioContext);
     try {
         m_endpoint = *resolver.resolve(asio::ip::udp::v4(), serverAddress, std::to_string(port)).begin();
@@ -102,17 +104,59 @@ void Network::start(const std::string& serverAddress, uint16_t port) {
         spdlog::error("Failed to start network: {}", e.what());
         return;
     }
+    spdlog::debug("2");
 
-    m_running = true;
-    do_receive(); 
+     m_running = true;
+    spdlog::info("Starting network with server {}:{}", serverAddress, port);
+    
+    spdlog::debug("3");
+    // 获取 future，以便我们可以等待
+    auto readyFuture = m_readyPromise.get_future();
+
+    spdlog::debug("4");
     m_networkThread = std::thread([this]() {
         try {
+            // 在开始事件循环前，先提交一个接收任务
+            do_receive(); 
+    spdlog::debug("5");
+            
+            // 通知主线程，我们已经准备好了
+            m_readyPromise.set_value(); // <--- 新增
+    spdlog::debug("6");
+
+            // 现在才开始阻塞运行事件循环
             m_ioContext.run();
         } catch (const std::exception& e) {
+            // 如果启动失败，也需要通知主线程
+             if (!m_promise_is_set.load()) { // <--- 使用原子 load()
+                 try { 
+                     m_readyPromise.set_exception(std::current_exception()); 
+                 } catch(...) {
+                     // set_exception 自身也可能抛出异常 (如果 promise 已被满足),
+                     // 但我们的原子标志可以防止这种情况。这个 catch 只是为了绝对安全。
+                 }
+            }
             spdlog::error("Network thread error: {}", e.what());
             m_running = false;
         }
     });
+
+    spdlog::debug("7");
+     try {
+        spdlog::debug("try Get future");
+        readyFuture.get(); // 这个调用可能会抛出异常
+        spdlog::debug("Network thread is ready. Proceeding.");
+    } catch (const std::exception& e) {
+        spdlog::error("Network thread failed to start: {}", e.what());
+        // 既然网络线程启动失败，我们需要确保它被清理
+        if (m_networkThread.joinable()) {
+            m_networkThread.join();
+        }
+        throw std::runtime_error("launch failed.");
+        return; 
+    }
+    spdlog::debug("8");
+
 }
 
 
@@ -217,18 +261,29 @@ void Network::do_receive() {
 
                 // 如果没有被阻塞调用处理，则使用常规的异步回调
                 if (!message_handled_by_blocker) {
-                    if (m_onMessageRecv) {
+                    
+                    // --- 【关键修改】安全地读取和调用 handler ---
+                    
+                    MessageHandler handler_copy; // 1. 创建一个 handler 的本地拷贝
+
+                    { // 2. 创建一个独立的作用域来限制锁的生命周期
+                        std::lock_guard<std::mutex> lock(m_handlerMutex);
+                        handler_copy = m_onMessageRecv; // 3. 在锁的保护下，将成员变量拷贝到本地变量
+                    } // 4. lock_guard 在这里析构，互斥锁被释放
+
+                    if (handler_copy) { // 5. 在锁之外，安全地使用本地拷贝
                         try {
-                            spdlog::trace("Message delivered to async handler.");
-                            m_onMessageRecv(m_recvBuffer.data(), bytes_transferred);
+                            // 调用回调函数
+                            handler_copy(m_recvBuffer.data(), bytes_transferred);
                         } catch (const std::exception& e) {
                             spdlog::error("Exception in message handler: {}", e.what());
                         }
                     } else {
-                        spdlog::trace("Received message but no async or blocking handler was set.");
+                        // 即使 handler 为空，也只是一个日志，没有危害
+                        spdlog::trace("Received message but no async handler was set.");
                     }
                 }
-                
+
                 // 再次启动下一次接收
                 if (m_running) {
                     do_receive();

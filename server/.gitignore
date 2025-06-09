@@ -1,3 +1,4 @@
 wldlib/*.a
 wldlib/*.h
 qfserver
+.qfserver

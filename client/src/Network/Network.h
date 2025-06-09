@@ -32,6 +32,7 @@ class Network {
     void stop(); 
 
     void setMessageHandler(MessageHandler handler) {
+        std::lock_guard<std::mutex> lock(m_handlerMutex);
         m_onMessageRecv = std::move(handler);
     }
     std::optional<std::vector<uint8_t>> receive_blocking(std::chrono::milliseconds timeout);
@@ -58,6 +59,9 @@ class Network {
     std::mutex m_blockingRecvMutex;
     std::optional<std::promise<std::vector<uint8_t>>> m_blockingPromise;
     
+    std::promise<void> m_readyPromise; 
+    std::atomic<bool> m_promise_is_set{false};
+     std::mutex m_handlerMutex;
 
     public: 
 
